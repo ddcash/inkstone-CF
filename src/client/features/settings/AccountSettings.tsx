@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Camera, KeyRound, LogOut, ShieldCheck, UserRound } from 'lucide-react'
 import { PROFILE_NAME_MAX_LENGTH } from '@shared/avatar'
+import { LIMITS } from '@shared/constants'
 import { Avatar, Badge, Button } from '../../components/primitives'
 import { Input, SettingRow, Switch } from '../../components/form'
 import { confirm } from '../../components/overlay'
@@ -9,6 +10,7 @@ import { t } from '../../lib/i18n'
 import { useSession } from '../../store/session'
 import { useUi } from '../../store/ui'
 import { AvatarPicker } from './AvatarPicker'
+import { TotpSettings } from './TotpSettings'
 
 export function AccountSettings() {
   const user = useSession((state) => state.user)
@@ -22,7 +24,10 @@ export function AccountSettings() {
         <h3 className="mb-2 px-1 text-[12px] font-semibold text-[var(--text-secondary)]">
           {t("settings.sign_in_security")}
         </h3>
-        <PasswordSection />
+        <div className="space-y-2">
+          <PasswordSection />
+          <TotpSettings />
+        </div>
       </section>
 
       {user.role === 'owner' && (
@@ -279,6 +284,7 @@ function PasswordSection() {
             <Input
               type="password"
               value={currentPassword}
+              maxLength={LIMITS.passwordMaxLength}
               onChange={(event) => setCurrentPassword(event.target.value)}
               disabled={busy}
               autoComplete="current-password"
@@ -292,6 +298,7 @@ function PasswordSection() {
               <Input
                 type="password"
                 value={newPassword}
+                maxLength={LIMITS.passwordMaxLength}
                 onChange={(event) => setNewPassword(event.target.value)}
                 disabled={busy}
                 autoComplete="new-password"
@@ -304,6 +311,7 @@ function PasswordSection() {
               <Input
                 type="password"
                 value={confirmation}
+                maxLength={LIMITS.passwordMaxLength}
                 onChange={(event) => setConfirmation(event.target.value)}
                 disabled={busy}
                 autoComplete="new-password"
@@ -324,7 +332,7 @@ function PasswordSection() {
 
 function RegistrationSection() {
   const site = useSession((state) => state.site)
-  const refresh = useSession((state) => state.refresh)
+  const updateRegistration = useSession((state) => state.updateRegistration)
   const toast = useUi((state) => state.toast)
   const [target, setTarget] = useState<boolean | null>(null)
   const [password, setPassword] = useState('')
@@ -356,24 +364,18 @@ function RegistrationSection() {
     if (!password) return setError(t("settings.enter_your_password"))
     busyRef.current = true
     setBusy(true)
+    const currentPassword = password
+    setTarget(null)
+    setPassword('')
     try {
-      await api.auth.updateRegistration(requested, password)
+      await updateRegistration(requested, currentPassword)
       toast({
         title: requested ? t("settings.registration_open") : t("settings.registration_closed"),
         description: requested ? t("settings.anyone_can_now_register_a_new_account") : t("settings.only_existing_accounts_can_log_in"),
         tone: 'success',
       })
-      setTarget(null)
-      setPassword('')
-      try {
-        await refresh()
-      } catch {
-        toast({
-          title: t("settings.operation_completed_but_refresh_failed"),
-          tone: 'warning',
-        })
-      }
     } catch (caught) {
+      setTarget(requested)
       setError(caught instanceof ApiError ? caught.message : t("settings.action_failed_try_again"))
     } finally {
       busyRef.current = false
@@ -416,6 +418,7 @@ function RegistrationSection() {
             <Input
               type="password"
               value={password}
+              maxLength={LIMITS.passwordMaxLength}
               onChange={(event) => setPassword(event.target.value)}
               disabled={busy}
               autoComplete="current-password"

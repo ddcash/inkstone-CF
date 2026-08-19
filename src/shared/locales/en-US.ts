@@ -8,6 +8,7 @@ export const EN_US_MESSAGES = {
     "api.error.internal": "Internal server error",
     "api.error.invalid_avatar": "The avatar is invalid or too large",
     "api.error.invalid_credentials": "Incorrect username or password",
+    "api.error.invalid_two_factor_code": "The verification code is incorrect or has already been used",
     "api.error.invalid_profile_name": "The display name is invalid",
     "api.error.invalid_username": "The username format is invalid",
     "api.error.not_found": "The requested item does not exist",
@@ -16,6 +17,11 @@ export const EN_US_MESSAGES = {
     "api.error.server_misconfigured": "The server configuration is incomplete",
     "api.error.storage_unavailable": "Storage is temporarily unavailable",
     "api.error.too_many_attempts": "Too many attempts. Try again later",
+    "api.error.two_factor_already_enabled": "Two-step verification is already enabled",
+    "api.error.two_factor_challenge_expired": "The sign-in verification expired. Enter your password again",
+    "api.error.two_factor_not_enabled": "Two-step verification is not enabled",
+    "api.error.two_factor_setup_expired": "The setup session expired. Start again",
+    "api.error.two_factor_unavailable": "The authenticator secret is unavailable. Use a recovery code instead",
     "api.error.unauthenticated": "Please sign in first",
     "api.error.username_taken": "That username is already in use",
     "api.error.weak_password": "The password is too weak",
@@ -63,20 +69,35 @@ export const EN_US_MESSAGES = {
     "api.request_failed_status": "Request failed ({status})",
     "api.request_timed_out": "The request timed out",
     "app.missing_root_mount_point": "Missing #root mount point",
+    "app.something_went_wrong": "Something went wrong",
+    "app.error_boundary_description": "An unexpected error occurred. Please reload the page to continue.",
+    "app.reload": "Reload",
+    "app.section_unavailable": "This section is temporarily unavailable",
     "auth.already_have_an_account_sign_in": "Already have an account? Sign in",
     "auth.between_the_paper_and_ink_the_pen_comes_to_life_an_inkstone_is_used_to_p": "Between the paper and ink, the pen comes to life. An inkstone is used to place all thoughts.",
     "auth.confirm_password": "Confirm Password",
     "auth.create_owner_account": "Create owner account",
     "auth.create_the_owner_account_this_step_appears_only_once": "Create the owner account. This step appears only once.",
+    "auth.authenticator_code": "Authenticator code",
+    "auth.back_to_password": "Back to password",
     "auth.enter_a_username_and_password": "Enter a username and password",
+    "auth.enter_authenticator_code": "Enter the 6-digit code from your authenticator app",
+    "auth.enter_recovery_code": "Enter one of your recovery codes",
     "auth.live_split_view_markdown_preview_realtime_multi_device_sync_multiple_web": "Live split-view Markdown preview · Realtime multi-device sync · Multiple WebDAV / S3 backups",
     "auth.network_error_try_again": "Network error. Try again",
     "auth.no_account_create_one": "No account? Create one",
     "auth.password_minimum_8_characters": "Password (minimum 8 characters)",
+    "auth.recovery_code": "Recovery code",
+    "auth.recovery_code_used": "Recovery code used",
+    "auth.recovery_codes_remaining": "You have {count} unused recovery code(s) remaining. Replace them in Settings if needed.",
     "auth.self_hosted_on_cloudflare_workers_your_data_is_yours": "Private notes · Your data stays under your control",
     "auth.sign_in": "Sign in",
     "auth.sign_up": "Sign up",
     "auth.this_is_a_private_instance_registration_is_closed_so_only_existing_accou": "This is a private instance. Registration is closed, so only existing accounts can sign in.",
+    "auth.two_step_verification_description": "Your password was accepted. Enter a second verification code to finish signing in.",
+    "auth.use_authenticator_code": "Use authenticator code",
+    "auth.use_recovery_code": "Use recovery code",
+    "auth.verify_and_sign_in": "Verify and sign in",
     "command.add_current_note_to_favorites": "Add current note to favorites",
     "command.archive_current_note": "Archive current note",
     "command.change_accent_color": "Change accent color",
@@ -115,6 +136,31 @@ export const EN_US_MESSAGES = {
     "command.switch_to_light_theme": "Switch to light theme",
     "command.triggered_as_you_type": "Triggered as you type",
     "command.use_nearly_every_action_without_touching_the_mouse": "Use nearly every action without touching the mouse",
+    "attachments.cleanup": "Clean up unreferenced",
+    "attachments.cleanup_confirm": "Clean up unreferenced attachments?",
+    "attachments.cleanup_confirm_description": "Only attachments that no longer appear in any note body will be deleted. This cannot be undone.",
+    "attachments.cleanup_failed": "Cleanup failed",
+    "attachments.cleaned_value0": "Cleaned up {value0} attachments",
+    "attachments.delete": "Delete attachment",
+    "attachments.delete_confirm_value0": "Delete attachment \"{value0}\"?",
+    "attachments.delete_failed": "Could not delete attachment",
+    "attachments.deleted": "Attachment deleted",
+    "attachments.empty": "No attachments yet. Paste or drag an image into a note to upload one.",
+    "attachments.filter_all": "All",
+    "attachments.filter_documents": "Documents",
+    "attachments.filter_images": "Images",
+    "attachments.filter_other": "Other",
+    "attachments.freed_value0": "Freed {value0}",
+    "attachments.load_failed": "Could not load more attachments",
+    "attachments.load_more": "Load more",
+    "attachments.manage": "Manage attachments",
+    "attachments.manage_description": "View, filter, and delete every uploaded attachment.",
+    "attachments.none_match": "No matching attachments",
+    "attachments.nothing_to_clean": "No attachments to clean up",
+    "attachments.referenced_value0": "{value0} references",
+    "attachments.shown_value0": "Showing {value0} attachments",
+    "attachments.total_value0": "{value0} attachments",
+    "attachments.unreferenced": "Unreferenced",
     "common.about": "About ",
     "common.access_control": "Access control",
     "common.access_passcode": "Access passcode",
@@ -126,12 +172,14 @@ export const EN_US_MESSAGES = {
     "common.close": "Close",
     "common.collapse": "Collapse",
     "common.command_palette": "Command palette",
+    "common.continue": "Continue",
     "common.copied": "Copied",
     "common.copy": "Copy",
     "common.created": "Created",
     "common.current_note": "Current note",
     "common.delete": "Delete",
     "common.delete_failed": "Delete failed",
+    "common.download": "Download",
     "common.edit": "Edit",
     "common.empty_trash": "Empty trash?",
     "common.exit": "Exit",
@@ -151,6 +199,8 @@ export const EN_US_MESSAGES = {
     "common.new_folder": "New folder",
     "common.new_note": "New note",
     "common.note": "Note",
+    "common.off": "Off",
+    "common.on": "On",
     "common.open": "Open",
     "common.open_registration": "Open registration",
     "common.open_settings": "Open settings",
@@ -197,15 +247,50 @@ export const EN_US_MESSAGES = {
     "editor.uploading_value0": "![Uploading {value0}…]()",
     "feedback.dismiss": "Dismiss",
     "graph.building_graph": "Building graph…",
+    "graph.all_folders": "All folders",
+    "graph.all_tags": "All tags",
+    "graph.appearance": "Appearance",
     "graph.choose_a_note": "Choose a note…",
     "graph.connect_notes_with_wiki_links_and_their_graph_will_appear_here": "Connect notes with [[wiki links]] and their graph will appear here",
     "graph.could_not_load_graph": "Could not load the graph",
+    "graph.create_note": "Create this note",
+    "graph.depth": "Link depth",
+    "graph.direction_counts": "{incoming} in · {outgoing} out",
     "graph.drag_to_pan_scroll_to_zoom_click_a_node_to_open_it_use_the_selector_abov": "Drag to pan · Scroll to zoom · Click a node to open it · Use the selector above with a keyboard",
     "graph.graph_canvas_drag_to_pan_and_scroll_to_zoom_keyboard_users_can_open_note": "Graph canvas: drag to pan and scroll to zoom; keyboard users can open notes with the selector above",
     "graph.links": " links",
+    "graph.filters": "Filters",
+    "graph.fit": "Fit to canvas",
+    "graph.folder": "Folder",
+    "graph.forces": "Forces",
+    "graph.global": "Global",
+    "graph.graph_canvas_accessible": "Graph canvas. Use arrow keys to select nodes, plus and minus to zoom, Enter to open, and Home to fit.",
+    "graph.group_by": "Color by",
+    "graph.group_none": "No grouping",
+    "graph.interaction_hint": "Drag to pan · Scroll or pinch to zoom · Click to open · Right-click for more",
+    "graph.link_distance": "Link distance",
+    "graph.local": "Local",
+    "graph.local_requires_note": "Open a note before viewing its local graph",
+    "graph.make_local_center": "Use as local center",
+    "graph.node_actions": "Node actions",
+    "graph.node_size": "Node size",
     "graph.notes": " notes · ",
     "graph.nothing_to_graph_yet": "Nothing to graph yet",
+    "graph.open_note": "Open note",
+    "graph.open_to_right": "Open to the right",
     "graph.open_a_note_from_the_graph": "Open a note from the graph",
+    "graph.repulsion": "Repulsion",
+    "graph.restore_defaults": "Restore default appearance",
+    "graph.scope": "Graph scope",
+    "graph.search_notes": "Filter notes…",
+    "graph.settings": "Graph settings",
+    "graph.show_arrows": "Show link direction",
+    "graph.show_labels": "Show titles",
+    "graph.show_orphans": "Show orphan notes",
+    "graph.show_unresolved": "Show unresolved notes",
+    "graph.showing_limit": "Showing {shown} of {total}; add filters to narrow the graph",
+    "graph.tag": "Tag",
+    "graph.unresolved_short": " unresolved",
     "graph.reset": "Reset",
     "markdown.abstract": "Abstract",
     "markdown.code": "Code",
@@ -280,9 +365,12 @@ export const EN_US_MESSAGES = {
     "notes.failed_to_open_note": "Failed to open note",
     "notes.filter_in_this_view": "Filter in this view…",
     "notes.full_sync_pagination_data_is_incomplete": "Full-sync pagination data is incomplete",
+    "notes.sync_pagination_data_is_incomplete": "Sync pagination data is incomplete",
     "notes.keep_notes_here_when_you_want_them_out_of_the_way_but_not_deleted": "Keep notes here when you want them out of the way but not deleted",
     "notes.keep_this_page_open_and_reconnect_as_soon_as_possible_closing_it_may_mak": "Keep this page open and reconnect as soon as possible. Closing it may make these changes unrecoverable.",
     "notes.modified": "Modified",
+    "notes.recently_deleted_first": "Recently deleted first",
+    "notes.recently_edited_first": "Recently edited first",
     "notes.move_to_folder": "Move to folder",
     "notes.move_to_value0": "Move to \"{value0}\"",
     "notes.move_value0_notes_to_trash": "Move {value0} notes to trash?",
@@ -299,6 +387,7 @@ export const EN_US_MESSAGES = {
     "notes.offline_modifications_have_been_restored_as_a_new_note": "Offline modifications have been restored as a new note.",
     "notes.open_a_copy": "Open a copy",
     "notes.open_navigation": "Open navigation",
+    "notes.open_to_side": "Open to side",
     "notes.other": "Other",
     "notes.permanent_deletion_failed": "Permanent deletion failed",
     "notes.permanent_deletion_was_canceled_because_the_note_body_is_not_safely_sync": "Permanent deletion was canceled because the note body is not safely synced",
@@ -353,13 +442,22 @@ export const EN_US_MESSAGES = {
     "pwa.install_description": "Open Inkstone in its own window and keep the app shell available offline.",
     "pwa.install_inkstone": "Install Inkstone",
     "pwa.installed": "Installed",
-    "pwa.offline_ready": "Inkstone is ready offline",
-    "pwa.offline_ready_description": "The app shell is now stored on this device.",
+    "pwa.offline_ready": "All offline resources are ready",
+    "pwa.offline_ready_description": "Every Inkstone feature can now open on this device without a network connection.",
+    "pwa.complete_offline_access": "Complete offline access",
+    "pwa.complete_offline_preparing_description": "Inkstone stays responsive while the remaining features download quietly in the background.",
+    "pwa.complete_offline_ready": "All features ready",
+    "pwa.complete_offline_ready_description": "Features you have not opened yet are also available offline.",
+    "pwa.complete_offline_retry_description": "Downloaded resources are kept. Inkstone will continue automatically when the connection returns.",
+    "pwa.preparing_progress": "Preparing {completed}/{total}",
+    "pwa.waiting_for_network": "Waiting to continue",
     "pwa.refresh_now": "Refresh now",
     "pwa.update_ready": "An app update is ready",
     "pwa.update_ready_description": "Refresh when convenient. Pending note changes are saved first.",
     "session.could_not_connect_to_the_server": "Could not connect to the server",
     "session.could_not_save_settings": "Could not save settings",
+    "session.logout_failed": "Could not log out safely",
+    "session.logout_pending_changes": "{count} unsaved change(s) could not be synced. Signing out will lose them. Sign out anyway?",
     "settings.20_gb_free_25_gb_with_referral_code": "20 GB free, 25 GB with referral code",
     "settings.about": "about",
     "settings.checked_at": "Checked",
@@ -378,13 +476,16 @@ export const EN_US_MESSAGES = {
     "settings.update_dialog_title": "A new version is available",
     "settings.update_manual_fork_hint": "Inkstone never changes or deploys your Fork automatically. Review the official repository, then sync it manually.",
     "settings.accent_color": "Accent color",
-    "settings.accent.amber": "Brass",
-    "settings.accent.celadon": "Celadon",
+    "settings.background_color": "Background",
+    "settings.background_paper": "Warm paper",
+    "settings.background_white": "Pure white",
+    "settings.accent.amber": "Marigold",
+    "settings.accent.celadon": "Jade",
     "settings.accent.cinnabar": "Cinnabar",
-    "settings.accent.graphite": "Graphite",
-    "settings.accent.indigo": "Indigo",
-    "settings.accent.terracotta": "Terracotta",
-    "settings.accent.wisteria": "Wisteria",
+    "settings.accent.graphite": "Slate",
+    "settings.accent.indigo": "Deep sea",
+    "settings.accent.terracotta": "Lagoon",
+    "settings.accent.wisteria": "Iris",
     "settings.access_key_id": "Access Key ID",
     "settings.account": "Account",
     "settings.action_failed_try_again": "Action failed. Try again",
@@ -412,8 +513,16 @@ export const EN_US_MESSAGES = {
     "settings.back_up_now": "Back up now",
     "settings.backup": "Backup",
     "settings.backup_completed_value0_targets": "Backup completed · {value0} targets",
+    "settings.backup_complete_marker_mismatch": "The COMPLETE marker does not match the manifest: {value0}",
+    "settings.backup_duplicate_path": "The backup folder contains a duplicate path: {value0}",
     "settings.backup_failed": "Backup failed",
-    "settings.backup_format": "Backup format",
+    "settings.backup_file_checksum_failed": "Backup file checksum failed: {value0}",
+    "settings.backup_file_size_mismatch": "Backup file size does not match: {value0}",
+    "settings.backup_manifest_not_found": "No Inkstone Markdown backup manifest was found. Select the complete extracted backup folder containing manifest.json, COMPLETE, and notes.",
+    "settings.backup_manifest_invalid": "The completed snapshot has an invalid or unsupported manifest: {value0}",
+    "settings.backup_missing_file": "The complete backup is missing a file: {value0}",
+    "settings.backup_no_complete_snapshot": "This folder has no complete snapshot with a valid COMPLETE marker.",
+    "settings.backup_newer_snapshot_skipped": "A newer snapshot ({value0}) was incomplete, so the newest complete snapshot was restored instead.",
     "settings.backup_target": "Backup target",
     "settings.backup_target_added": "Backup target added",
     "settings.backup_target_deleted": "Backup target deleted",
@@ -464,7 +573,7 @@ export const EN_US_MESSAGES = {
     "settings.display_name_saved": "Display name saved",
     "settings.download_json": "Download JSON",
     "settings.download_zip": "Download ZIP",
-    "settings.each_backup_goes_independently_to_every_enabled_target_it_includes_notes": "Each backup goes independently to every enabled target. It includes notes, folders, tags, and attachments and can be fully restored from the ZIP.",
+    "settings.each_backup_goes_independently_to_every_enabled_target_it_includes_notes": "Each target receives one complete downloadable ZIP. Notes retain their folder hierarchy, archived and trashed notes and original attachments stay separate, and generation plus upload are fully streamed.",
     "settings.edit_backup_target": "Edit backup target",
     "settings.editor": "Editor",
     "settings.endpoint": "Endpoint",
@@ -503,10 +612,8 @@ export const EN_US_MESSAGES = {
     "settings.import_failed": "Import failed",
     "settings.operation_completed_but_refresh_failed": "The operation completed, but the page could not refresh. Try again shortly",
     "settings.import_file": "Import file",
-    "settings.includes_every_note_folder_tag_and_attachment_for_a_complete_restore_plu": "Includes every note, folder, tag, and attachment for a complete restore, plus readable .md files",
+    "settings.includes_every_note_folder_tag_and_attachment_for_a_complete_restore_plu": "Downloads the same complete ZIP used by automatic backup. Extract very large backups and select the folder for bounded restore batches.",
     "settings.indent_width": "Indent width",
-    "settings.individual_file_mirror": "Individual-file mirror",
-    "settings.individual_files": "Individual files",
     "settings.inkstone_import_reminder": "[Inkstone] Import reminder:",
     "settings.interface_density": "Interface density",
     "settings.interface_language": "Interface language",
@@ -530,6 +637,80 @@ export const EN_US_MESSAGES = {
     "settings.look_at_home_together": "look at home together.",
     "settings.maintenance": "Maintenance",
     "settings.manual": "Manual",
+    "settings.mcp": "MCP",
+    "settings.mcp_ai_search": "AI semantic search",
+    "settings.mcp_ai_search_clear": "Clear index",
+    "settings.mcp_ai_search_clear_desc": "Removes every stored vector for this account and cancels pending indexing. Search falls back to keywords until you rebuild the index.",
+    "settings.mcp_ai_search_clear_title": "Clear the AI search index?",
+    "settings.mcp_ai_search_cleared": "Cleared {count} embeddings",
+    "settings.mcp_ai_search_desc": "Notes are embedded privately on your Cloudflare account and stored in your own database, one index per account. The search tools merge keyword and semantic results automatically. Content changes are indexed in the background.",
+    "settings.mcp_ai_search_disabled": "AI search disabled",
+    "settings.mcp_ai_search_enabled": "AI search enabled, building the index…",
+    "settings.mcp_ai_search_indexed": "{count} notes indexed",
+    "settings.mcp_ai_search_pending": "{count} pending",
+    "settings.mcp_ai_search_reindex": "Rebuild index",
+    "settings.mcp_ai_search_reindex_desc": "Queues every note in this account for re-embedding. Existing vectors are replaced.",
+    "settings.mcp_ai_search_reindex_title": "Rebuild the AI search index?",
+    "settings.mcp_ai_search_reindexed": "Queued {count} notes for re-indexing",
+    "settings.mcp_ai_search_unavailable": "Unavailable",
+    "settings.mcp_ai_search_unavailable_desc": "Workers AI is not configured for this deployment, so AI search stays off and keyword search is used. Add the AI binding in wrangler.toml to enable it.",
+    "settings.mcp_api_key_copy_warning": "Copy this key now — it will never be shown again",
+    "settings.mcp_api_key_create": "Create key",
+    "settings.mcp_api_key_created": "API key created",
+    "settings.mcp_api_key_name": "API key name",
+    "settings.mcp_api_key_name_placeholder": "e.g. my-script, home-laptop",
+    "settings.mcp_api_key_name_required": "Enter a name for the API key",
+    "settings.mcp_api_key_revoke": "Revoke key",
+    "settings.mcp_api_key_revoke_desc": "{name} will immediately stop working. Clients using it lose access until you create a replacement.",
+    "settings.mcp_api_key_revoke_title": "Revoke this API key?",
+    "settings.mcp_api_key_revoked": "API key revoked",
+    "settings.mcp_api_key_show_once": "The key is only stored hashed on the server; if you lose it you must create a new one.",
+    "settings.mcp_api_key_unused": "never used",
+    "settings.mcp_api_key_used": "used {time}",
+    "settings.mcp_api_keys": "API keys",
+    "settings.mcp_api_keys_desc": "For small, generic, or unnamed MCP clients that cannot run OAuth. Authenticate with a plain Bearer header; keys inherit the read/write permissions above at creation time and can be revoked at any time.",
+    "settings.mcp_api_keys_empty": "No API keys yet. Create one for scripts or minimal MCP clients.",
+    "settings.mcp_connect_clients": "Connect a client",
+    "settings.mcp_connect_desc": "Examples use each client's current remote HTTP and OAuth format. Clients that can pin scopes reflect the settings above; the browser consent page confirms the final permissions. Reconnect or sign in again after changing them.",
+    "settings.mcp_connected_clients": "Authorized clients",
+    "settings.mcp_copied": "Copied",
+    "settings.mcp_copy": "Copy",
+    "settings.mcp_disabled": "Disabled",
+    "settings.mcp_demo_desc": "This page mirrors a configured Inkstone server so you can inspect every MCP option. The endpoint, credentials, clients, and index statistics are examples; all MCP actions are disabled in the demo.",
+    "settings.mcp_demo_title": "Display-only MCP preview",
+    "settings.mcp_enable": "Enable MCP",
+    "settings.mcp_enable_desc": "Controls the remote MCP service for every account. Existing grants stop working while it is disabled.",
+    "settings.mcp_endpoint": "Remote MCP endpoint",
+    "settings.mcp_endpoint_desc": "Streamable HTTP with OAuth 2.1 (PKCE, protected-resource discovery, dynamic client registration, refresh tokens) for full MCP clients, plus revocable static API keys (Bearer tokens) for small generic clients.",
+    "settings.mcp_generic_client": "Generic / unnamed client (API key)",
+    "settings.mcp_generic_client_snippet": "# Any small or unnamed MCP client / script / SDK (create an API key in the section above first)\nclaude mcp add-json inkstone '{bearerJson}'\n\n# Or set the Authorization header directly in any MCP SDK: { \"Authorization\": \"Bearer ink_...\" }\n# Quick endpoint check with curl:\ncurl -X POST \"{endpoint}\" \\\n  -H \"Authorization: Bearer <API_KEY>\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Accept: application/json, text/event-stream\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{},\"clientInfo\":{\"name\":\"curl\",\"version\":\"1.0\"}}}'",
+    "settings.mcp_grant_revoked": "Client access revoked",
+    "settings.mcp_granted_at": "authorized {time}",
+    "settings.mcp_intro": "Let Codex, Claude Code, Hermes, OpenClaw, and other standard MCP clients search, cite, read, and—with explicit permission—safely edit your notes.",
+    "settings.mcp_load_failed": "Could not load MCP settings",
+    "settings.mcp_loading": "Loading MCP settings…",
+    "settings.mcp_no_clients": "No client has been authorized for this account.",
+    "settings.mcp_permissions": "Permissions",
+    "settings.mcp_privacy": "Privacy boundary",
+    "settings.mcp_privacy_desc": "The MCP URL is reachable from the internet so your clients can connect, but every note operation requires OAuth and is limited to the signed-in account. AI Search has no public query endpoint and uses a separate index per account. Content a tool reads is intentionally returned to the connected AI client and is then governed by that client's privacy policy.",
+    "settings.mcp_private_knowledge": "Private AI knowledge base",
+    "settings.mcp_reconnect_notice": "Reconnect the client or sign in again to refresh its OAuth scopes.",
+    "settings.mcp_revoke": "Revoke access",
+    "settings.mcp_revoke_all": "Revoke all",
+    "settings.mcp_revoke_all_desc": "Every connected client for this account will be signed out. You can authorize them again later.",
+    "settings.mcp_revoke_all_title": "Revoke all client access?",
+    "settings.mcp_revoke_desc": "{name} will immediately lose access to this account's notes.",
+    "settings.mcp_revoke_title": "Revoke this client?",
+    "settings.mcp_revoked_count": "Revoked {count} client grants",
+    "settings.mcp_scope_read": "Read",
+    "settings.mcp_scope_trash": "Trash",
+    "settings.mcp_scope_write": "Write",
+    "settings.mcp_trash_access": "Allow moving notes to trash",
+    "settings.mcp_trash_access_desc": "Separate high-risk permission for soft-delete only. MCP never exposes permanent purge.",
+    "settings.mcp_transport": "HTTP · OAuth 2.1 / Bearer",
+    "settings.mcp_updated": "MCP settings updated",
+    "settings.mcp_write_access": "Allow modifying the note library",
+    "settings.mcp_write_access_desc": "May modify notes, folders, tags, properties, and attachments, and may create shares or run configured backups. Writes use conflict protection and stable operation IDs.",
     "settings.math": "Math",
     "settings.monospace": "Monospace",
     "settings.name": "Name",
@@ -584,6 +765,8 @@ export const EN_US_MESSAGES = {
     "settings.registration_open": "Registration open",
     "settings.registration_status": "Registration status",
     "settings.region": "Region",
+    "settings.restore_backup_folder": "Restore Inkstone backup folder",
+    "settings.restore_backup_folder_description": "Select a folder extracted from the new ZIP, or a legacy backup root containing attachments and snapshots. Inkstone verifies COMPLETE and restores it in bounded batches.",
     "settings.reloaded_all_data": "Up to date",
     "settings.render_and_using_katex": "Display inline and block math",
     "settings.render_mermaid_code_blocks_into_flowcharts": "Display Mermaid code blocks as diagrams",
@@ -597,6 +780,7 @@ export const EN_US_MESSAGES = {
     "settings.scroll_sync": "Scroll sync",
     "settings.sec": " sec",
     "settings.select_file": "Select file",
+    "settings.select_backup_folder": "Select backup folder",
     "settings.selected_avatar": "Selected avatar",
     "settings.select_object_read_write_for_permissions_and_create_it_directly": ", select Object Read & Write for permissions, and create it directly.",
     "settings.secret_access_key": "Secret Access Key",
@@ -607,7 +791,6 @@ export const EN_US_MESSAGES = {
     "settings.sign_in_security": "Sign-in security",
     "settings.sign_up": "Sign up",
     "settings.simplified_chinese": "Simplified Chinese",
-    "settings.single_archive": "Single archive",
     "settings.spellcheck": "Spellcheck",
     "settings.standard": "Standard",
     "settings.store_backups_in_this_directory_or_leave_blank_to_use_the_root_directory": "Store backups in this directory, or leave blank to use the root directory",
@@ -624,6 +807,46 @@ export const EN_US_MESSAGES = {
     "settings.then_open": "Then open",
     "settings.there_are_no_attachments_to_clean": "There are no attachments to clean",
     "settings.this_device_will_be_signed_out_and_its_local_cache_cleared_cloud_data_is": "This device will be signed out and its local cache cleared. Cloud data is unaffected.",
+    "settings.totp_authenticator_code": "Current authenticator code",
+    "settings.totp_code_or_recovery": "Authenticator or recovery code",
+    "settings.totp_code_or_recovery_placeholder": "6-digit code or recovery code",
+    "settings.totp_confirm_code": "Enter the 6-digit code shown in the app",
+    "settings.totp_confirm_disable": "Disable two-step verification",
+    "settings.totp_confirm_enable": "Verify and enable",
+    "settings.totp_copy_all": "Copy all",
+    "settings.totp_copy_failed": "Could not copy. Select and copy the value manually.",
+    "settings.totp_disable": "Disable",
+    "settings.totp_disable_description": "Enter your password and either a current authenticator code or an unused recovery code. Other devices will be signed out.",
+    "settings.totp_disable_title": "Disable two-step verification?",
+    "settings.totp_disabled": "Two-step verification disabled",
+    "settings.totp_disabled_description": "Add an authenticator app code after your password to protect new sign-ins.",
+    "settings.totp_enable": "Enable",
+    "settings.totp_enable_password_description": "Confirm your current password before linking an authenticator app.",
+    "settings.totp_enabled": "Two-step verification enabled",
+    "settings.totp_enabled_description": "New sign-ins require an authenticator or recovery code. {count} recovery code(s) remain.",
+    "settings.totp_enter_code_or_recovery": "Enter an authenticator or recovery code",
+    "settings.totp_enter_six_digit_code": "Enter a valid 6-digit authenticator code",
+    "settings.totp_generate_new_codes": "Replace recovery codes",
+    "settings.totp_load_failed": "Could not load two-step verification status",
+    "settings.totp_loading": "Loading two-step verification…",
+    "settings.totp_manage": "Manage",
+    "settings.totp_manual_secret": "Manual setup key",
+    "settings.totp_other_sessions_revoked": "Other signed-in devices have been logged out.",
+    "settings.totp_qr_code_title": "Authenticator setup QR code",
+    "settings.totp_recovery_codes": "Recovery codes",
+    "settings.totp_recovery_codes_copied": "Recovery codes copied",
+    "settings.totp_recovery_codes_once": "Each code works once. Store them somewhere private; they will not be shown again.",
+    "settings.totp_recovery_codes_replaced": "Recovery codes replaced",
+    "settings.totp_recovery_file_title": "Inkstone two-step verification recovery codes",
+    "settings.totp_recovery_file_warning": "Keep these codes private. Each code can be used once to sign in or disable two-step verification.",
+    "settings.totp_regenerate_description": "Replacing these codes immediately invalidates every previous recovery code. Confirm with your password and authenticator.",
+    "settings.totp_save_recovery_codes": "Save these recovery codes now",
+    "settings.totp_saved_codes": "I saved these codes",
+    "settings.totp_scan_qr": "Scan with your authenticator app",
+    "settings.totp_scan_qr_description": "Use any TOTP-compatible app, then enter its current 6-digit code to confirm setup.",
+    "settings.totp_secret_copied": "Setup key copied",
+    "settings.totp_title": "Two-step verification (TOTP)",
+    "settings.totp_unavailable_description": "The server credential vault is unavailable, so TOTP cannot be enabled safely.",
     "settings.to_add_users_open_registration_under_settings_account_they_can_then_crea": "To add users, open registration under Settings → Account. They can then create an account with a username and password.",
     "settings.total_words": "Total words",
     "settings.try_this_when_your_search_results_don_t_look_right": "Try this when your search results don't look right",
@@ -633,8 +856,6 @@ export const EN_US_MESSAGES = {
     "settings.up_to_10_gb": "Up to 10 GB",
     "settings.update_failed": "Update failed",
     "settings.upload_local_image": "Upload a local image",
-    "settings.upload_individual_files_so_they_remain_browsable_and_editable_in_the_sto": "Upload individual files so they remain browsable and editable in the storage service",
-    "settings.upload_one_zip_to_minimize_requests_best_for_rate_limited_storage_provid": "Upload one ZIP to minimize requests; best for rate-limited storage providers",
     "settings.uploaded_avatar": "Uploaded local image",
     "settings.use_name_avatar": "Use name avatar",
     "settings.username_is_sign_in_id": "@username is your sign-in ID and does not change with your display name.",
@@ -670,6 +891,7 @@ export const EN_US_MESSAGES = {
     "share.generate_public_link": "Generate public link",
     "share.incorrect_passcode": "Incorrect passcode",
     "share.enter_a_passcode": "Enter a passcode first",
+    "share.passcode_too_short": "The passcode must be at least 4 characters",
     "share.keep_current_expiration": "Keep current",
     "share.leave_blank_to_keep_the_current_passcode": "Leave blank to keep the current passcode",
     "share.link_revoked": "Link revoked",
@@ -710,6 +932,7 @@ export const EN_US_MESSAGES = {
     "shell.quick_open": "Quick open",
     "shell.resize_navigation_panel": "Resize navigation panel",
     "shell.resize_note_list": "Resize note list",
+    "shell.resize_note_panes": "Resize note panes",
     "shell.save_now": "Save now",
     "shell.saving": "Saving…",
     "shell.search_all_notes": "Search all notes",
@@ -730,7 +953,22 @@ export const EN_US_MESSAGES = {
     "sidebar.failed_to_create_folder": "Failed to create folder",
     "sidebar.log_out": "Log out",
     "sidebar.member": "Member",
+    "sidebar.move_earlier": "Move earlier",
     "sidebar.move_failed": "Move failed",
+    "sidebar.move_later": "Move later",
+    "sidebar.move_out_one_level": "Move out one level",
+    "folders.appearance": "Folder appearance",
+    "folders.choose_parent": "Choose parent folder",
+    "folders.color": "Color",
+    "folders.delete_contents_move_up": "{value0} direct notes and {value1} child folders will move up one level. Notes inside child folders stay in those folders.",
+    "folders.icon": "Icon",
+    "folders.includes_subfolders": "Includes notes in subfolders",
+    "folders.move_to": "Move to…",
+    "folders.no_color": "No color",
+    "folders.no_icon": "Default icon",
+    "folders.no_match": "No matching folders",
+    "folders.search": "Search folders",
+    "folders.top_level": "Top level",
     "sidebar.new_subfolder": "New subfolder",
     "sidebar.rename": "Rename",
     "sidebar.rename_failed": "Rename failed",
@@ -739,6 +977,27 @@ export const EN_US_MESSAGES = {
     "sidebar.switch_to_light": "Switch to light",
     "sidebar.the_value0_notes_inside_move_up_one_level_and_are_not_deleted": "The {value0} notes inside move up one level and are not deleted.",
     "sidebar.this_folder_is_empty": "This folder is empty.",
+    "tags.change_color": "Change color",
+    "tags.clear_color": "Clear color",
+    "tags.color": "Color",
+    "tags.color_failed": "Could not update color",
+    "tags.create_failed": "Could not create tag",
+    "tags.create_first": "Create your first tag",
+    "tags.delete": "Delete tag",
+    "tags.delete_confirm_value0": "Delete tag \"{value0}\"? It will also be removed from the related note bodies.",
+    "tags.delete_failed": "Could not delete tag",
+    "tags.deleted": "Tag deleted",
+    "tags.delete_description_value0": "It is used by {value0} active notes. Matching content in archived notes and trash will also be handled, with a version kept for every changed note.",
+    "tags.invalid_name": "Tag names cannot contain spaces or #",
+    "tags.merge": "Merge tags",
+    "tags.merge_confirm_value0_value1": "Merge \"{value0}\" into \"{value1}\"?",
+    "tags.merge_description": "The two tags will become one, and related note bodies and metadata will use the existing tag name.",
+    "tags.new": "New tag",
+    "tags.new_placeholder": "Tag name",
+    "tags.rename": "Rename",
+    "tags.rename_failed": "Could not rename tag",
+    "tags.renamed": "Tag renamed",
+    "tags.updated_note_bodies_value0": "Updated {value0} note bodies. Open notes were refreshed too.",
     "time.just_now": "Just now",
     "time.this_month": "This month",
     "time.this_week": "This week",
@@ -751,6 +1010,7 @@ export const EN_US_MESSAGES = {
     "workspace.block_reference": "Block reference",
     "workspace.callout": "Callout",
     "workspace.characters": " characters",
+    "workspace.close_right_note": "Close right note",
     "workspace.choose_a_note_or_write_a_new_one": "Choose a note, or write a new one",
     "workspace.code_block": "Code block",
     "workspace.definition_list": "Definition list",
@@ -759,6 +1019,11 @@ export const EN_US_MESSAGES = {
     "workspace.divider": "Divider",
     "workspace.edit_only": "Edit only",
     "workspace.enhanced_code_block": "Enhanced code block",
+    "workspace.export": "Export",
+    "workspace.export_failed": "Export failed",
+    "workspace.export_html": "Export as HTML",
+    "workspace.export_markdown": "Export as Markdown",
+    "workspace.export_pdf": "Export as PDF",
     "workspace.footnote": "Footnote",
     "workspace.heading_value0": "Heading {value0}",
     "workspace.inline_math": "Inline math",
@@ -768,6 +1033,7 @@ export const EN_US_MESSAGES = {
     "workspace.large_content_using_a_faster_comparison": "Large content · using a faster comparison",
     "workspace.latest": "Latest",
     "workspace.layout": "Layout",
+    "workspace.left_note_pane": "Left note pane",
     "workspace.link": "Link",
     "workspace.loading_note_content": "Loading note content",
     "workspace.note_title": "Note title",
@@ -787,6 +1053,7 @@ export const EN_US_MESSAGES = {
     "workspace.preview_only": "Preview only",
     "workspace.remote_image": "Remote image",
     "workspace.resize_editor_and_preview_panes": "Resize editor and preview panes",
+    "workspace.right_note_pane": "Right note pane",
     "workspace.restore_this_version": "Restore this version?",
     "workspace.restore_this_version_da5169": "Restore this version",
     "workspace.restored_to_selected_version": "Restored to selected version",
@@ -811,8 +1078,12 @@ aliases:
 
 # Welcome to Inkstone
 
-> [!TIP] Three things to know first
-> This is your private Markdown notebook. It saves automatically and keeps working offline.
+> [!TIP] Five things to know first
+> - This is your private Markdown notebook; note bodies always remain plain text.
+> - Content saves automatically, remains editable offline, and uploads after reconnection.
+> - Common create, move, organize, and delete actions take effect locally first and roll back safely if persistence fails.
+> - The title at the top of a note is independently editable and does not have to match the first body line.
+> - MCP is entirely optional and requires account authorization before it can read notes.
 
 Use the left side to organize notes, the center to edit plain Markdown, and the right side for live preview. There is no proprietary document format: every \`.md\` file in a backup opens in any text editor.
 
@@ -823,6 +1094,11 @@ Use the left side to organize notes, the center to edit plain Markdown, and the 
 - [ ] Select text and press \`Ctrl + B\` to make it bold
 - [ ] Press \`Ctrl + K\` to open the command palette
 - [ ] Add a \`#tag\`, or click [[My first note]] to create a linked note
+- [ ] Click the title above this note and give it a name different from the body
+- [ ] Create a subfolder, then drag it into another folder or sibling position
+- [ ] Alt-click another note, or choose **Open to side**, to work with two notes at once
+- [ ] Install Inkstone as an offline-capable PWA under **Settings → About**
+- [ ] Open **Settings → MCP** to review private AI connections and permissions
 - [ ] Add a backup target under **Settings → Backup**
 - [ ] Create a password-protected share for a note
 
@@ -849,16 +1125,35 @@ Use the left side to organize notes, the center to edit plain Markdown, and the 
 
 ## Why it works for long-term notes
 
-::: tabs
-@tab Writing
-Source editing, live preview, synchronized scrolling, focus and typewriter modes, an outline, and version history.
-
-@tab Organization
-Nested folders, inline \`#tags\`, \`[[wiki links]]\`, backlinks, a graph, and full-text search.
-
-@tab Safety & backup
-Self-hosting, offline editing, and multi-device sync. Back up to several WebDAV or S3 targets and export readable Markdown plus a complete JSON archive.
+:::: tabs
+::: tab-item Writing
+Independent titles, source editing, live preview, synchronized scrolling, focus and typewriter modes, an outline, and version history.
 :::
+
+::: tab-item Organization
+Twelve levels of drag-sortable folders, inline \`#tags\`, \`[[wiki links]]\`, backlinks, a graph, and full-text search. On desktop, open a second note to the side and choose edit, split, or preview independently in each active group. Deleting a folder promotes its children and moves direct notes to the parent.
+:::
+
+::: tab-item Search & AI
+Keyboard command-palette navigation, keyword search, and optional Workers AI semantic/hybrid search. Every account has a separate index, with automatic keyword fallback when AI is unavailable.
+:::
+
+::: tab-item Safety & backup
+Self-hosting, an installable PWA, offline editing, multi-device sync, and conflict copies. Back up to several WebDAV or S3 targets and export readable Markdown, attachments, and complete structured data.
+:::
+::::
+
+## Private MCP (optional)
+
+Under **Settings → MCP**, the owner can enable the remote MCP service and each account can separately decide whether to allow writes or moves to trash:
+
+- Full MCP clients such as Codex and Claude Code authorize through OAuth 2.1 with PKCE. You can revoke one client or every grant at any time.
+- Scripts and minimal clients without OAuth can use an \`ink_...\` API key. A key is shown once, stored only as a hash, and can be revoked at any time.
+- MCP can search, read bounded ranges, inspect outlines/folders/tags/links, and—with explicit permission—safely create, edit, organize, trash, or restore notes. Permanent purge is never exposed.
+- With Workers AI configured, Inkstone builds a per-account semantic index and combines semantic and keyword results. The index can be rebuilt or cleared, and content changes are indexed in the background.
+
+> [!WARNING] Check an external AI client's privacy policy before connecting
+> Inkstone isolates accounts and enforces permissions, but content an authorized client actually reads is then processed by that client.
 
 ## Markdown quick reference
 
@@ -940,13 +1235,15 @@ flowchart LR
 ~~~~
 
 ~~~~md-example title="Tabs"
-::: tabs
-@tab First tab
+:::: tabs
+::: tab-item First tab
 This is the first tab panel.
+:::
 
-@tab Second tab
+::: tab-item Second tab
 This is the second tab panel.
 :::
+::::
 ~~~~
 
 ~~~~md-example title="Folded content"
@@ -970,7 +1267,9 @@ console.log(\`Hello, \${name}!\`)
 
 ## Saving, syncing, and recovery
 
-Changes save automatically and sync to your other devices. You can keep editing offline, and syncing resumes when you reconnect.
+Changes save automatically and sync to your other devices. You can keep editing offline, and queued writes replay in order after reconnection. Everyday actions appear locally first and roll back only if background persistence fails; stale sync responses cannot overwrite newer local state.
+
+Install the PWA under **Settings → About**. Application updates wait for confirmation and flush pending note writes before refreshing; only the owner receives deployment-version reminders. Existing databases upgrade through versioned, idempotent migrations, but keep a current backup before updating a self-hosted deployment.
 
 Add several WebDAV/S3 destinations and a schedule under **Settings → Backup**. Import or export \`.md\`, \`.zip\`, and complete JSON archives under **Settings → Data**.
 

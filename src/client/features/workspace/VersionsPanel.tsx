@@ -16,7 +16,7 @@ export function VersionsPanel({ onClose }: {
 }) {
     const { note, content } = useActiveNote();
     const toast = useUi((s) => s.toast);
-    const openNote = useNotes((s) => s.openNote);
+    const restoreVersion = useNotes((s) => s.restoreVersion);
     const [versions, setVersions] = useState<NoteVersionMeta[] | null>(null);
     const [versionsError, setVersionsError] = useState<string | null>(null);
     const [versionsReload, setVersionsReload] = useState(0);
@@ -41,9 +41,10 @@ export function VersionsPanel({ onClose }: {
         setPreviewError(null);
         if (!note)
             return;
+        const controller = new AbortController();
         let cancelled = false;
         api.notes
-            .versions(note.id)
+            .versions(note.id, controller.signal)
             .then((res) => {
             if (cancelled)
                 return;
@@ -56,6 +57,7 @@ export function VersionsPanel({ onClose }: {
         });
         return () => {
             cancelled = true;
+            controller.abort();
         };
     }, [note?.id, versionsReload]);
     useEffect(() => () => {
@@ -67,9 +69,10 @@ export function VersionsPanel({ onClose }: {
         setPreviewError(null);
         if (!note || !selectedId)
             return;
+        const controller = new AbortController();
         let cancelled = false;
         api.notes
-            .version(note.id, selectedId)
+            .version(note.id, selectedId, controller.signal)
             .then((v) => {
             if (!cancelled)
                 setPreview(v.content);
@@ -80,6 +83,7 @@ export function VersionsPanel({ onClose }: {
         });
         return () => {
             cancelled = true;
+            controller.abort();
         };
     }, [note?.id, selectedId, previewReload]);
     const diff = useMemo(() => preview === null ? null : computeLineDiff(preview, content), [preview, content]);
@@ -99,13 +103,8 @@ export function VersionsPanel({ onClose }: {
             });
             if (!ok || restoreEpoch.current !== epoch || noteIdRef.current !== noteId)
                 return;
-            await api.notes.restoreVersion(noteId, versionId);
-            if (restoreEpoch.current !== epoch || noteIdRef.current !== noteId)
-                return;
-            await openNote(noteId);
-            if (restoreEpoch.current !== epoch || noteIdRef.current !== noteId)
-                return;
-            toast({ title: t("workspace.restored_to_selected_version"), tone: 'success' });
+            const versionTitle = versions?.find((version) => version.id === versionId)?.title;
+            void restoreVersion(noteId, versionId, preview, versionTitle);
             onClose();
         }
         catch (err) {

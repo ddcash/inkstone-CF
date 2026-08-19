@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Cloud, Database, Info, Keyboard, Palette, RefreshCw, Type, UserRound, X, } from 'lucide-react';
+import { BrainCircuit, Cloud, Database, Info, Keyboard, Palette, RefreshCw, Type, UserRound, X, } from 'lucide-react';
 import { ACCENTS } from '@shared/constants';
 import { cn } from '../../lib/cn';
 import { Tooltip, useDialogFocus, useEscape, useLockScroll } from '../../components/overlay';
@@ -15,7 +15,8 @@ import { AboutSettings } from './AboutSettings';
 import { useUi } from '../../store/ui';
 import { t } from "../../lib/i18n";
 const BackupSettings = lazy(() => import('./BackupSettings').then((m) => ({ default: m.BackupSettings })));
-type Section = 'appearance' | 'editor' | 'backup' | 'sync' | 'account' | 'data' | 'about';
+const McpSettings = lazy(() => import('./McpSettings').then((m) => ({ default: m.McpSettings })));
+type Section = 'appearance' | 'editor' | 'backup' | 'sync' | 'mcp' | 'account' | 'data' | 'about';
 const SECTIONS: {
     id: Section;
     label: () => string;
@@ -25,6 +26,7 @@ const SECTIONS: {
     { id: 'editor', label: () => t("settings.editor"), icon: <Type size={14}/> },
     { id: 'backup', label: () => t("settings.backup"), icon: <Cloud size={14}/> },
     { id: 'sync', label: () => t("settings.sync"), icon: <RefreshCw size={14}/> },
+    { id: 'mcp', label: () => t("settings.mcp"), icon: <BrainCircuit size={14}/> },
     { id: 'account', label: () => t("settings.account"), icon: <UserRound size={14}/> },
     { id: 'data', label: () => t("settings.data"), icon: <Database size={14}/> },
     { id: 'about', label: () => t("settings.about"), icon: <Info size={14}/> },
@@ -43,7 +45,7 @@ export function SettingsPanel({ onClose }: {
     useEffect(() => {
         bodyRef.current?.scrollTo({ top: 0 });
     }, [section]);
-    return createPortal(<div className="fixed inset-0 z-[210] flex items-center justify-center md:p-8">
+    return createPortal(<div className="app-viewport-fixed fixed z-[210] flex items-center justify-center md:p-8">
       <div className="anim-fade absolute inset-0 bg-[var(--scrim)] backdrop-blur-[3px]" onClick={onClose} aria-hidden="true"/>
 
       <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className="anim-pop relative flex h-full w-full max-w-[880px] flex-col overflow-hidden bg-[var(--bg-overlay)] pt-[env(safe-area-inset-top)] shadow-[var(--shadow-modal)] outline-none md:max-h-[720px] md:flex-row md:rounded-[var(--r-2xl)] md:border md:border-[var(--border-default)] md:pt-0">
@@ -89,15 +91,20 @@ export function SettingsPanel({ onClose }: {
           </header>
 
           <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-[calc(16px+env(safe-area-inset-bottom))] md:px-5 md:py-4">
-            {section === 'appearance' && <AppearanceSettings accents={ACCENTS}/>}
-            {section === 'editor' && <EditorSettings />}
-            {section === 'sync' && <SyncSettings />}
-            {section === 'account' && <AccountSettings />}
-            {section === 'data' && <DataSettings />}
-            {section === 'about' && <AboutSettings />}
-            {section === 'backup' && (<Suspense fallback={<LoadingBlock label={t("settings.loading_backup_settings")}/>}>
-                <BackupSettings />
-              </Suspense>)}
+            <div key={section} className="anim-view-content">
+              {section === 'appearance' && <AppearanceSettings accents={ACCENTS}/>}
+              {section === 'editor' && <EditorSettings />}
+              {section === 'sync' && <SyncSettings />}
+              {section === 'mcp' && (<Suspense fallback={<LoadingBlock label={t("settings.mcp_loading")}/>}> 
+                  <McpSettings />
+                </Suspense>)}
+              {section === 'account' && <AccountSettings />}
+              {section === 'data' && <DataSettings />}
+              {section === 'about' && <AboutSettings />}
+              {section === 'backup' && (<Suspense fallback={<LoadingBlock label={t("settings.loading_backup_settings")}/> }>
+                  <BackupSettings />
+                </Suspense>)}
+            </div>
           </div>
         </div>
       </div>

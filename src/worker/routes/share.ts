@@ -1,5 +1,6 @@
 import { Hono, type Context } from 'hono'
 import { setCookie } from 'hono/cookie'
+import { LIMITS } from '@shared/constants'
 import type { PublicNote, ShareInfo } from '@shared/types'
 import type { AppBindings } from '../env'
 import { ApiError } from '../lib/errors'
@@ -8,7 +9,6 @@ import { JSON_BODY_LIMITS, readJson, readOptionalJson, requestClientIp } from '.
 import { hashPassword, verifyPassword } from '../lib/password'
 import {
   createShareAssetSession,
-  revokeShareAssetSessions,
   shareAssetCookieName,
 } from '../lib/share-asset-session'
 import {
@@ -78,8 +78,11 @@ shareManageRoutes.post('/:noteId', async (c) => {
   if (body.password !== undefined && body.password !== null && typeof body.password !== 'string') {
     throw ApiError.badRequest('password must be a string or null')
   }
-  if (typeof body.password === 'string' && body.password.length > 128) {
-    throw ApiError.badRequest('The access password must not exceed 128 characters')
+  if (typeof body.password === 'string' && body.password.length > LIMITS.passwordMaxLength) {
+    throw ApiError.badRequest(`The access password must not exceed ${LIMITS.passwordMaxLength} characters`)
+  }
+  if (typeof body.password === 'string' && body.password.length > 0 && body.password.length < 4) {
+    throw ApiError.badRequest('The access password must be at least 4 characters')
   }
   if (
     body.expiresIn !== undefined &&
@@ -93,7 +96,7 @@ shareManageRoutes.post('/:noteId', async (c) => {
         ? Date.now() + Math.min(body.expiresIn, 365 * 24 * 60 * 60 * 1000)
         : null
 
-  const replacePassword = body.password === null || (typeof body.password === 'string' && body.password.length > 0)
+  const replacePassword = body.password === null || typeof body.password === 'string'
   const passwordHash =
     body.password === null
       ? null
@@ -125,22 +128,15 @@ shareManageRoutes.post('/:noteId', async (c) => {
   const row = await c.env.DB.prepare(`SELECT * FROM shares WHERE note_id = ?1 AND user_id = ?2`)
     .bind(noteId, userId)
     .first<ShareRow>()
-  if (replacePassword) await revokeShareAssetSessions(c.env.DB, row!.slug)
   return c.json({ share: toShareInfo(row!, new URL(c.req.url).origin) })
 })
 
 shareManageRoutes.delete('/:noteId', async (c) => {
   const noteId = c.req.param('noteId')
   const userId = c.get('userId')
-  const row = await c.env.DB.prepare(`SELECT slug FROM shares WHERE note_id = ?1 AND user_id = ?2`)
+  await c.env.DB.prepare(`DELETE FROM shares WHERE note_id = ?1 AND user_id = ?2`)
     .bind(noteId, userId)
-    .first<{ slug: string }>()
-  if (row) {
-    await c.env.DB.batch([
-      c.env.DB.prepare(`DELETE FROM share_asset_sessions WHERE slug = ?1`).bind(row.slug),
-      c.env.DB.prepare(`DELETE FROM shares WHERE note_id = ?1 AND user_id = ?2`).bind(noteId, userId),
-    ])
-  }
+    .run()
   return c.json({ ok: true })
 })
 
@@ -149,7 +145,9 @@ shareRoutes.post('/:slug', async (c) => {
   const slug = c.req.param('slug')
   if (!isValidSlug(slug)) throw ApiError.notFound('The link does not exist or has been revoked')
   const body = await readOptionalJson<{ password?: string }>(c, JSON_BODY_LIMITS.small, {})
-  const password = typeof body.password === 'string' ? body.password.slice(0, 128) : ''
+  const password = typeof body.password === 'string'
+    ? body.password.slice(0, LIMITS.passwordMaxLength)
+    : ''
 
   const share = await c.env.DB.prepare(`SELECT * FROM shares WHERE slug = ?1`)
     .bind(slug)
@@ -163,12 +161,20 @@ shareRoutes.post('/:slug', async (c) => {
     }
     const throttleKeys = [
       `share:${slug}:ip:${requestClientIp(c)}`,
+      { key: `share-slug:${slug}`, freeFails: 40 },
     ]
-    const workKeys = [{
-      key: `share-work:${slug}:ip:${requestClientIp(c)}`,
-      maxAttempts: 8,
-      windowMs: 10 * 60 * 1000,
-    }]
+    const workKeys = [
+      {
+        key: `share-work:${slug}:ip:${requestClientIp(c)}`,
+        maxAttempts: 8,
+        windowMs: 10 * 60 * 1000,
+      },
+      {
+        key: `share-work-slug:${slug}`,
+        maxAttempts: 60,
+        windowMs: 10 * 60 * 1000,
+      },
+    ]
     try {
       await consumeAttemptBudget(c.env.DB, workKeys)
       await assertNotLocked(c.env.DB, throttleKeys)
@@ -184,7 +190,10 @@ shareRoutes.post('/:slug', async (c) => {
       await recordLoginFailure(c.env.DB, throttleKeys)
       return c.json({ error: { code: 'password_invalid', message: "Incorrect passcode" } }, 401)
     }
-    await clearLoginFailures(c.env.DB, [...throttleKeys, workKeys[0]!.key])
+    await clearLoginFailures(c.env.DB, [
+      ...throttleKeys,
+      ...workKeys.map((target) => target.key),
+    ])
   }
 
   const note = await c.env.DB.prepare(
@@ -265,7 +274,7 @@ async function renderShareShell(
 
   const siteName = c.env.APP_NAME || 'Inkstone'
   const expired = row?.expires_at ? row.expires_at < Date.now() : false
-  const title = row && !expired ? publicShareTitle(row.title) : "Content unavailable"
+  const title = row && !expired && !row.password_hash ? publicShareTitle(row.title) : "Content unavailable"
   const description = row && !expired && !row.password_hash ? row.excerpt : ''
 
   const meta = [

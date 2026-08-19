@@ -1,19 +1,20 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Eye, FileText, ListTree, PencilLine } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { registerAll } from '../../lib/hotkeys';
 import { useBreakpoint } from '../../lib/hooks';
 import { useSyncEngine } from '../../lib/sync';
 import { Drawer } from '../../components/overlay';
+import { InlineErrorBoundary } from '../../components/ErrorBoundary';
 import { PANEL_WIDTHS, useUi } from '../../store/ui';
-import { useNotes } from '../../store/notes';
+import { createContextualNote, useNotes } from '../../store/notes';
 import { useSession } from '../../store/session';
 import { useUpdate } from '../../store/update';
 import { Sidebar } from '../sidebar/Sidebar';
 import { NoteList } from '../list/NoteList';
 import { Workspace } from '../workspace/Workspace';
 import { FloatingSearch } from './FloatingSearch';
-import { Resizer } from './Resizer';
+import { Resizer, SplitResizer } from './Resizer';
 import { t } from "../../lib/i18n";
 const CommandPalette = lazy(() => import('../command/CommandPalette').then((m) => ({ default: m.CommandPalette })));
 const SettingsPanel = lazy(() => import('../settings/SettingsPanel').then((m) => ({ default: m.SettingsPanel })));
@@ -29,48 +30,81 @@ export function AppShell() {
     const checkForUpdates = useUpdate((s) => s.check);
     useSyncEngine();
     useGlobalHotkeys();
+    const hydrated = useNotes((s) => s.hydrated);
+    const openNote = useNotes((s) => s.openNote);
+    const deepLinkHandled = useRef(false);
+    useEffect(() => {
+        if (!hydrated || deepLinkHandled.current)
+            return;
+        deepLinkHandled.current = true;
+        const match = /^\/n\/([0-9a-hjkmnp-tv-z]{26})\/?$/.exec(location.pathname);
+        if (!match)
+            return;
+        useUi.getState().openView('all');
+        void openNote(match[1]!);
+    }, [hydrated, openNote]);
     useEffect(() => {
         if (role === 'owner')
             void checkForUpdates();
     }, [role, checkForUpdates]);
 
     useEffect(() => {
-        useUi.setState({ outlineOpen: useSession.getState().settings.preview.showToc });
+        const ui = useUi.getState();
+        useUi.setState({
+            outlineOpen: ui.workspaceSecondaryNoteId
+                ? false
+                : useSession.getState().settings.preview.showToc,
+        });
     }, []);
     const navWidth = useUi((s) => s.navWidth);
     const listWidth = useUi((s) => s.listWidth);
     const navCollapsed = useUi((s) => s.navCollapsed);
     const listCollapsed = useUi((s) => s.listCollapsed);
     const navDrawerOpen = useUi((s) => s.navDrawerOpen);
+    const workspaceSecondaryNoteId = useUi((s) => s.workspaceSecondaryNoteId);
+    const workspaceSplitRatio = useUi((s) => s.workspaceSplitRatio);
     const toggleNav = useUi((s) => s.toggleNav);
     const toggleNavDrawer = useUi((s) => s.toggleNavDrawer);
     const setLayout = useUi((s) => s.setLayout);
+    const workspaceGroupsRef = useRef<HTMLElement>(null);
     const isMobile = breakpoint === 'mobile';
     const isTablet = breakpoint === 'tablet';
 
     const showNav = !isMobile && !isTablet;
     const navAsDrawer = isTablet && navDrawerOpen;
     const showList = !listCollapsed && !isMobile;
+    const showWorkspaceSplit = breakpoint === 'desktop' && Boolean(workspaceSecondaryNoteId);
+    const effectiveWorkspaceSplitRatio = workspaceSplitRatio ?? 0.5;
     if (isMobile)
         return <MobileShell />;
     return (<div className="relative flex h-full min-h-0 overflow-hidden bg-[var(--bg-base)]">
       <div className="flex min-w-0 flex-1">
         {showNav && (<>
-            <div style={{ width: navCollapsed ? 48 : navWidth }} className="shrink-0 overflow-hidden">
+            <div style={{ width: navCollapsed ? 48 : navWidth }} className="shrink-0 overflow-hidden transition-[width] duration-[var(--dur-slow)] ease-[var(--ease-out)]">
               <Sidebar collapsed={navCollapsed} onCollapse={toggleNav}/>
             </div>
             {!navCollapsed && (<Resizer label={t("shell.resize_navigation_panel")} value={navWidth} min={PANEL_WIDTHS.navigation.min} max={PANEL_WIDTHS.navigation.max} onChange={(navWidth) => setLayout({ navWidth })} onReset={() => setLayout({ navWidth: PANEL_WIDTHS.navigation.min })}/>)}
           </>)}
 
         {showList && (<>
-            <div style={{ width: listWidth }} className="shrink-0 overflow-hidden">
+            <div style={{ width: listWidth }} className="anim-view-content shrink-0 overflow-hidden">
               <NoteList />
             </div>
             <Resizer label={t("shell.resize_note_list")} value={listWidth} min={PANEL_WIDTHS.noteList.min} max={PANEL_WIDTHS.noteList.max} onChange={(listWidth) => setLayout({ listWidth })} onReset={() => setLayout({ listWidth: PANEL_WIDTHS.noteList.min })}/>
           </>)}
 
-        <main className="min-w-0 flex-1">
-          <Workspace />
+        <main ref={workspaceGroupsRef} className="flex min-w-0 flex-1">
+          {showWorkspaceSplit ? (<>
+              <div className="min-w-0" style={{ width: `${effectiveWorkspaceSplitRatio * 100}%` }}>
+                <InlineErrorBoundary><Workspace pane="primary" grouped/></InlineErrorBoundary>
+              </div>
+              <SplitResizer label={t("shell.resize_note_panes")} containerRef={workspaceGroupsRef} ratio={effectiveWorkspaceSplitRatio} onChange={(workspaceSplitRatio) => setLayout({ workspaceSplitRatio })} onReset={() => setLayout({ workspaceSplitRatio: null })}/>
+              <div className="anim-view-content min-w-0 flex-1">
+                <InlineErrorBoundary><Workspace pane="secondary" grouped/></InlineErrorBoundary>
+              </div>
+            </>) : (<div className="min-w-0 flex-1">
+                <InlineErrorBoundary><Workspace /></InlineErrorBoundary>
+              </div>)}
         </main>
       </div>
 
@@ -101,15 +135,15 @@ function MobileShell() {
             { id: 'preview' as const, icon: <Eye size={19}/>, label: t("common.preview") },
         ] : []),
     ];
-    return (<div className="relative flex h-full flex-col overflow-hidden bg-[var(--bg-base)] pt-[env(safe-area-inset-top)]">
+    return (<div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-[var(--bg-base)] pt-[env(safe-area-inset-top)]">
       <div className="relative min-h-0 flex-1">
-        <div className={cn('absolute inset-0', pane === 'nav' ? 'block' : 'hidden')}>
+        <div aria-hidden={pane !== 'nav'} inert={pane !== 'nav'} data-active={pane === 'nav' || undefined} className="mobile-pane-layer absolute inset-0">
           <Sidebar onCollapse={() => setPane('list')}/>
         </div>
-        <div className={cn('absolute inset-0', pane === 'list' ? 'block' : 'hidden')}>
+        <div aria-hidden={pane !== 'list'} inert={pane !== 'list'} data-active={pane === 'list' || undefined} className="mobile-pane-layer absolute inset-0">
           <NoteList />
         </div>
-        <div className={cn('absolute inset-0', notePane ? 'block' : 'hidden')}>
+        <div aria-hidden={!notePane} inert={!notePane} data-active={notePane || undefined} data-from="right" className="mobile-pane-layer absolute inset-0">
           {notePane && activeNoteId && (<Workspace mobileLayout={pane === 'preview' ? 'preview' : 'edit'} onMobileBack={() => setPane('list')}/>) }
         </div>
       </div>
@@ -118,7 +152,7 @@ function MobileShell() {
 
       <nav aria-label={t("shell.mobile_navigation")} className="flex h-[calc(56px+env(safe-area-inset-bottom))] shrink-0 items-stretch justify-around border-t border-[var(--border-subtle)] bg-[var(--bg-sunken)] pb-[env(safe-area-inset-bottom)]">
         {tabs.map((tab) => (<button key={tab.id} type="button" aria-current={pane === tab.id ? 'page' : undefined} onClick={() => setPane(tab.id)} className={cn('flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] transition-colors active:bg-[var(--bg-active)]', pane === tab.id ? 'text-[var(--accent)]' : 'text-[var(--text-quaternary)]')}>
-            {tab.icon}
+            <span className={cn('mobile-tab-icon', pane === tab.id && 'is-active')}>{tab.icon}</span>
             {tab.label}
           </button>))}
       </nav>
@@ -177,7 +211,7 @@ function useGlobalHotkeys(): void {
                 description: () => t("common.new_note"),
                 group: () => t("shell.global"),
                 allowInInput: true,
-                handler: () => void notes().createNote(),
+                handler: () => void createContextualNote(),
             },
             {
                 id: 'search',
@@ -210,8 +244,15 @@ function useGlobalHotkeys(): void {
                 group: () => t("common.interface"),
                 allowInInput: true,
                 handler: () => {
-                    const session = useSession.getState();
                     const order = ['edit', 'split', 'preview'] as const;
+                    const uiState = ui();
+                    if (uiState.workspaceSecondaryNoteId) {
+                        const pane = uiState.activeWorkspacePane;
+                        const current = order.indexOf(uiState.workspacePaneLayouts[pane]);
+                        uiState.setWorkspacePaneLayout(pane, order[(current + 1) % order.length]);
+                        return;
+                    }
+                    const session = useSession.getState();
                     const current = order.indexOf(session.settings.preview.layout);
                     void session.updateSettings({
                         preview: { layout: order[(current + 1) % order.length] },

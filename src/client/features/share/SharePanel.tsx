@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Copy, ExternalLink, Eye, Globe, Link2, Lock, Trash2 } from 'lucide-react';
+import { LIMITS } from '@shared/constants';
 import type { ShareInfo } from '@shared/types';
 import { api, ApiError } from '../../lib/api';
 import { cn } from '../../lib/cn';
@@ -53,6 +54,7 @@ export function SharePanel({ onClose }: {
             return;
         }
         const noteId = note.id;
+        const controller = new AbortController();
         let cancelled = false;
         setShare(undefined);
         setLoadError(null);
@@ -62,7 +64,7 @@ export function SharePanel({ onClose }: {
         setCopied(false);
         window.clearTimeout(copiedTimer.current);
         api.share
-            .get(note.id)
+            .get(note.id, controller.signal)
             .then((res) => {
             if (cancelled || loadEpoch.current !== epoch || noteIdRef.current !== noteId)
                 return;
@@ -76,6 +78,7 @@ export function SharePanel({ onClose }: {
         });
         return () => {
             cancelled = true;
+            controller.abort();
         };
     }, [note?.id, reload]);
     useEffect(() => () => {
@@ -90,6 +93,10 @@ export function SharePanel({ onClose }: {
     const create = async () => {
         if (busyRef.current || share === undefined || loadError)
             return;
+        if (usePassword && password.length > 0 && password.length < 4) {
+            toast({ title: t("share.passcode_too_short"), tone: 'danger' });
+            return;
+        }
         if (needsNewSharePasscode(usePassword, Boolean(share?.hasPassword), password)) {
             toast({ title: t("share.enter_a_passcode"), tone: 'danger' });
             return;
@@ -133,6 +140,9 @@ export function SharePanel({ onClose }: {
             return;
         const noteId = note.id;
         const epoch = ++mutationEpoch.current;
+        const previousShare = share;
+        const previousUsePassword = usePassword;
+        const previousExpiry = expiry;
         loadEpoch.current++;
         busyRef.current = 'revoke';
         setBusy('revoke');
@@ -145,17 +155,20 @@ export function SharePanel({ onClose }: {
             });
             if (mutationEpoch.current !== epoch || noteIdRef.current !== noteId || !ok)
                 return;
-            await api.share.remove(noteId);
-            if (mutationEpoch.current !== epoch || noteIdRef.current !== noteId)
-                return;
             setShare(null);
             setUsePassword(false);
             setExpiry('0');
+            await api.share.remove(noteId);
+            if (mutationEpoch.current !== epoch || noteIdRef.current !== noteId)
+                return;
             toast({ title: t("share.link_revoked") });
         }
         catch (err) {
             if (mutationEpoch.current !== epoch || noteIdRef.current !== noteId)
                 return;
+            setShare(previousShare);
+            setUsePassword(previousUsePassword);
+            setExpiry(previousExpiry);
             toast({
                 title: t("common.action_failed"),
                 description: err instanceof ApiError ? err.message : String(err),
@@ -233,7 +246,7 @@ export function SharePanel({ onClose }: {
           </div>
 
           {usePassword && (<Field label={t("share.passcode")} hint={share?.hasPassword ? t("share.leave_blank_to_keep_the_current_passcode") : undefined}>
-              <Input type="password" value={password} disabled={busy !== null} maxLength={128} onChange={(e) => setPassword(e.target.value)} placeholder={share?.hasPassword ? t("share.unchanged") : t("share.set_a_passcode")} autoComplete="new-password"/>
+              <Input type="password" value={password} disabled={busy !== null} maxLength={LIMITS.passwordMaxLength} onChange={(e) => setPassword(e.target.value)} placeholder={share?.hasPassword ? t("share.unchanged") : t("share.set_a_passcode")} autoComplete="new-password"/>
             </Field>)}
 
           <Field label={t("share.expiration")}>

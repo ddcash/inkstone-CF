@@ -1,18 +1,20 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Archive, ArrowDownWideNarrow, CheckSquare2, Copy, FolderInput, MoreHorizontal, Pin, PinOff, PanelLeft, Plus, RotateCcw, Search, Star, StarOff, Trash2, X, } from 'lucide-react';
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Archive, ArrowDownWideNarrow, CheckSquare2, Columns2, Copy, FileCode, FileDown, FileText, FolderInput, MoreHorizontal, Pin, PinOff, PanelLeft, Plus, RotateCcw, Search, Star, StarOff, Trash2, X, } from 'lucide-react';
 import type { NoteSummary, SortKey, ViewKind } from '@shared/types';
 import { cn } from '../../lib/cn';
-import { shortTime, groupLabel } from '../../lib/time';
+import { groupLabel } from '../../lib/time';
 import { useNow } from '../../lib/hooks';
 import { fuzzyFilter, splitByRanges } from '../../lib/fuzzy';
 import { useBreakpoint } from '../../lib/hooks';
-import { api } from '../../lib/api';
 import { prettyCombo } from '../../lib/hotkeys';
+import { exportNoteAsHtml, exportNoteAsMarkdown, exportNoteAsPdf } from '../../lib/export-note';
 import { IconButton } from '../../components/primitives';
 import { Menu, Tooltip, confirm, useContextMenu, type MenuItem } from '../../components/overlay';
 import { Empty, NoteListSkeleton } from '../../components/feedback';
 import { useUi } from '../../store/ui';
-import { useNotes, useVisibleNotes } from '../../store/notes';
+import { createContextualNote, useNotes, useVisibleNotes } from '../../store/notes';
+import { folderPathLabel } from '../../lib/folders';
+import { FolderPicker } from '../folders/FolderPicker';
 import { t, useLocale, type MessageKey } from "../../lib/i18n";
 const VIEW_MESSAGE_KEYS: Record<ViewKind, MessageKey> = {
     all: 'navigation.all_notes',
@@ -42,33 +44,35 @@ export function NoteList() {
     const toggleNavDrawer = useUi((s) => s.toggleNavDrawer);
     const notes = useVisibleNotes();
     const folders = useNotes((s) => s.folders);
+    const tags = useNotes((s) => s.tags);
     const loading = useNotes((s) => s.loading);
     const hydrated = useNotes((s) => s.hydrated);
-    const createNote = useNotes((s) => s.createNote);
     const openNote = useNotes((s) => s.openNote);
     const { emptyTrash, emptyingTrash } = useEmptyTrash();
     const [filter, setFilter] = useState('');
+    const deferredFilter = useDeferredValue(filter);
     const [sortMenuOpen, setSortMenuOpen] = useState(false);
     const sortButtonRef = useRef<HTMLButtonElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
     const now = useNow();
+    const tagColors = useMemo(() => new Map((tags ?? []).map((item) => [item.name, item.color])), [tags]);
 
     useEffect(() => setFilter(''), [view, folderId, tag]);
     const title = useMemo(() => {
         if (view === 'folder')
-            return folders.find((f) => f.id === folderId)?.name ?? t("navigation.folder");
+            return (folderId ? folderPathLabel(folders, folderId) : '') || t("navigation.folder");
         if (view === 'tag')
             return `#${tag ?? ''}`;
         return t(VIEW_MESSAGE_KEYS[view]);
     }, [view, folderId, tag, folders, locale]);
     const filtered = useMemo(() => {
-        if (!filter.trim())
+        if (!deferredFilter.trim())
             return notes.map((note) => ({ note, ranges: EMPTY_HIGHLIGHT }));
-        return fuzzyFilter(notes, filter, (n) => `${n.title} ${n.excerpt}`, 200).map(({ item, match }) => ({
+        return fuzzyFilter(notes, deferredFilter, (n) => `${n.title} ${n.excerpt}`, 200).map(({ item, match }) => ({
             note: item,
             ranges: match.ranges.filter(([s]) => s < item.title.length),
         }));
-    }, [notes, filter]);
+    }, [notes, deferredFilter]);
     const filteredIds = useMemo(() => filtered.map((item) => item.note.id), [filtered]);
     const filteredIdsRef = useRef(filteredIds);
     filteredIdsRef.current = filteredIds;
@@ -79,7 +83,7 @@ export function NoteList() {
         listRef.current
             ?.querySelector<HTMLElement>(`[data-note-id="${activeNoteId}"]`)
             ?.scrollIntoView({ block: 'nearest' });
-    }, [activeNoteId]);
+    }, [activeNoteId, view, folderId, tag]);
     const onKeyDown = (event: React.KeyboardEvent) => {
         if (event.key === 'Escape') {
             useUi.getState().setSelected(activeNoteId ? [activeNoteId] : []);
@@ -113,7 +117,20 @@ export function NoteList() {
         const [lo, hi] = from <= to ? [from, to] : [to, from];
         ui.setSelected(ids.slice(lo, hi + 1));
     }, []);
-    const sortItems: MenuItem[] = [
+    const sortItems: MenuItem[] = view === 'recent' || view === 'trash' ? [
+        {
+            id: 'fixed-order',
+            label: view === 'trash' ? t("notes.recently_deleted_first") : t("notes.recently_edited_first"),
+            checked: true,
+            disabled: true,
+        },
+        {
+            id: 'density',
+            label: density === 'comfortable' ? t("notes.compact_list") : t("notes.comfortable_list"),
+            separatorBefore: true,
+            onSelect: () => useUi.getState().setDensity(density === 'comfortable' ? 'compact' : 'comfortable'),
+        },
+    ] : [
         { id: 'updated', label: t("notes.modified"), checked: sort === 'updated', onSelect: () => setSort('updated') },
         { id: 'created', label: t("notes.created"), checked: sort === 'created', onSelect: () => setSort('created') },
         { id: 'title', label: t("notes.title"), checked: sort === 'title', onSelect: () => setSort('title', 'asc') },
@@ -132,9 +149,10 @@ export function NoteList() {
     return (<section className="relative flex h-full min-h-0 flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-base)]">
       <header className="shrink-0 px-3 pt-3 pb-2">
         <div className="mb-2.5 flex items-center justify-between gap-2">
-          <h2 className="min-w-0 truncate text-[14.5px] font-semibold tracking-[-0.016em] text-[var(--text-primary)]">
-            {title}
-          </h2>
+          <div className="min-w-0">
+            <h2 className="truncate text-[14.5px] font-semibold tracking-[-0.016em] text-[var(--text-primary)]">{title}</h2>
+            {view === 'folder' && <p className="mt-0.5 truncate text-[10.5px] text-[var(--text-quaternary)]">{t("folders.includes_subfolders")}</p>}
+          </div>
           <div className="flex shrink-0 items-center gap-0.5">
             {breakpoint === 'tablet' && (<Tooltip label={t("notes.open_navigation")}>
                 <IconButton label={t("notes.open_navigation")} size="sm" onClick={() => toggleNavDrawer(true)}>
@@ -146,8 +164,8 @@ export function NoteList() {
                 <ArrowDownWideNarrow size={14}/>
               </IconButton>
             </Tooltip>
-            {view !== 'trash' && (<Tooltip label={t("common.new_note")} combo="mod+n">
-                <IconButton label={t("common.new_note")} size="sm" onClick={() => void createNote()}>
+            {view !== 'trash' && view !== 'archived' && (<Tooltip label={t("common.new_note")} combo="mod+n">
+                <IconButton label={t("common.new_note")} size="sm" onClick={() => void createContextualNote()}>
                   <Plus size={15}/>
                 </IconButton>
               </Tooltip>)}
@@ -177,13 +195,13 @@ export function NoteList() {
         {view === 'trash' && notes.length > 0 && (<button type="button" disabled={emptyingTrash} aria-busy={emptyingTrash} onClick={() => void emptyTrash()} className="mt-2 w-full rounded-[var(--r-md)] border border-[var(--border-subtle)] py-1.5 text-[11.5px] text-[var(--text-tertiary)] transition-colors hover:border-[var(--danger)] hover:text-[var(--danger)] disabled:pointer-events-none disabled:opacity-50">{t("notes.empty_trash")}{notes.length}{t("notes.notes_93aeb9")}</button>)}
       </header>
 
-      <div ref={listRef} role="listbox" aria-label={title} aria-multiselectable="true" aria-activedescendant={activeNoteId && filteredIds.includes(activeNoteId) ? `note-option-${activeNoteId}` : undefined} tabIndex={0} onKeyDown={onKeyDown} className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[var(--accent)]">
+      <div key={`${view}:${folderId ?? ''}:${tag ?? ''}`} ref={listRef} role="listbox" aria-label={title} aria-multiselectable="true" aria-activedescendant={activeNoteId && filteredIds.includes(activeNoteId) ? `note-option-${activeNoteId}` : undefined} tabIndex={0} onKeyDown={onKeyDown} className="anim-view-content min-h-0 flex-1 overflow-y-auto px-2 pb-4 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-[var(--accent)]">
         {!hydrated && loading ? (<NoteListSkeleton />) : filtered.length === 0 ? (<ListEmpty view={view} filtering={Boolean(filter)}/>) : (groups.map((group) => (<div key={group.key} role="group" aria-label={group.label ?? title}>
               {group.label && (<div className="px-2 pt-3 pb-1 text-[10.5px] font-semibold tracking-[0.06em] text-[var(--text-quaternary)]">
                   {group.label}
                 </div>)}
               <div role="presentation" className="space-y-px">
-                {group.items.map(({ note, ranges }) => (<NoteRow key={note.id} note={note} highlight={ranges} density={density} now={now} onRangeSelect={selectRange}/>))}
+                {group.items.map(({ note, ranges }) => (<NoteRow key={note.id} note={note} highlight={ranges} density={density} tagColors={tagColors} onRangeSelect={selectRange}/>))}
               </div>
             </div>)))}
       </div>
@@ -193,18 +211,21 @@ export function NoteList() {
       <Menu anchor={sortButtonRef} open={sortMenuOpen} onClose={() => setSortMenuOpen(false)} items={sortItems} align="end"/>
     </section>);
 }
-const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSelect, }: {
+const NoteRow = memo(function NoteRow({ note, highlight, density, tagColors, onRangeSelect, }: {
     note: NoteSummary;
     highlight: [
         number,
         number
     ][];
     density: 'comfortable' | 'compact';
-    now: number;
+    tagColors: Map<string, string | null>;
     onRangeSelect: (noteId: string) => void;
 }) {
     const breakpoint = useBreakpoint();
+    const locale = useLocale();
+    const toast = useUi((s) => s.toast);
     const active = useUi((s) => s.activeNoteId === note.id);
+    const openInSecondary = useUi((s) => s.workspaceSecondaryNoteId === note.id);
     const selectedIds = useUi((s) => s.selectedIds);
     const selected = selectedIds.includes(note.id);
     const selectionHighlighted = selected && (selectedIds.length > 1 || !active);
@@ -219,6 +240,7 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
     const menu = useContextMenu();
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [moveOpen, setMoveOpen] = useState(false);
     const purgeRef = useRef(false);
     const [purging, setPurging] = useState(false);
     const inTrash = Boolean(note.deletedAt);
@@ -242,6 +264,36 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
             setPurging(false);
         }
     };
+    const exportNote = async (format: 'md' | 'html' | 'pdf') => {
+        const state = useNotes.getState();
+        let content = state.contents[note.id];
+        if (content === undefined) {
+            await state.openNote(note.id);
+            content = useNotes.getState().contents[note.id];
+            if (content === undefined) {
+                toast({ title: t("common.export_failed"), tone: 'danger' });
+                return;
+            }
+        }
+        const payload = { title: note.title, content };
+        if (format === 'md') {
+            exportNoteAsMarkdown(payload);
+            return;
+        }
+        try {
+            if (format === 'html')
+                await exportNoteAsHtml(payload, locale);
+            else
+                await exportNoteAsPdf(payload, locale);
+        }
+        catch (err) {
+            toast({
+                title: t("common.export_failed"),
+                description: err instanceof Error ? err.message : String(err),
+                tone: 'danger',
+            });
+        }
+    };
     const items: MenuItem[] = inTrash
         ? [
             { id: 'restore', label: t("common.restore"), icon: <RotateCcw size={13}/>, onSelect: () => void restoreNote(note.id) },
@@ -256,6 +308,12 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
             },
         ]
         : [
+            ...(breakpoint === 'desktop' ? [{
+                id: 'open-side',
+                label: t("notes.open_to_side"),
+                icon: <Columns2 size={13}/>,
+                onSelect: () => void openNote(note.id, { pane: 'secondary' }),
+            } satisfies MenuItem] : []),
             ...(breakpoint === 'mobile' ? [{
                 id: 'multi-select',
                 label: t("notes.add_to_selection"),
@@ -280,16 +338,19 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
             {
                 id: 'archive',
                 label: note.isArchived ? t("common.unarchive") : t("navigation.archive"),
+                icon: <Archive size={13}/>,
                 onSelect: () => void patchNote(note.id, { isArchived: !note.isArchived }),
             },
-            ...folders.slice(0, 6).map<MenuItem>((folder, index) => ({
-                id: `move-${folder.id}`,
-                label: t("notes.move_to_value0", { value0: folder.name }),
-                icon: index === 0 ? <FolderInput size={13}/> : undefined,
-                separatorBefore: index === 0,
-                disabled: folder.id === note.folderId,
-                onSelect: () => void patchNote(note.id, { folderId: folder.id }),
-            })),
+            {
+                id: 'move',
+                label: t("notes.move_to_folder"),
+                icon: <FolderInput size={13}/>,
+                separatorBefore: true,
+                onSelect: () => setMoveOpen(true),
+            },
+            { id: 'export-md', label: t("workspace.export_markdown"), icon: <FileText size={13}/>, separatorBefore: true, onSelect: () => void exportNote('md') },
+            { id: 'export-html', label: t("workspace.export_html"), icon: <FileCode size={13}/>, onSelect: () => void exportNote('html') },
+            { id: 'export-pdf', label: t("workspace.export_pdf"), icon: <FileDown size={13}/>, onSelect: () => void exportNote('pdf') },
             {
                 id: 'delete',
                 label: t("common.move_to_trash"),
@@ -305,6 +366,11 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
             e.dataTransfer.setData('application/x-inkstone-note', note.id);
             e.dataTransfer.effectAllowed = 'move';
         }} onClick={(event) => {
+            if (event.altKey && breakpoint === 'desktop') {
+                event.preventDefault();
+                void openNote(note.id, { pane: 'secondary' });
+                return;
+            }
             if (event.metaKey || event.ctrlKey) {
                 toggleSelected(note.id, true);
                 return;
@@ -318,15 +384,17 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
         }} onContextMenu={(event) => {
             setMenuOpen(false);
             menu.onContextMenu(event);
-        }} className={cn('group relative cursor-default rounded-[var(--r-md)] border border-transparent px-2.5 pr-11 transition-[background-color,border-color,box-shadow] duration-[var(--dur-fast)] md:pr-2.5', density === 'compact' ? 'py-[7px]' : 'py-2.5', selectionHighlighted
+        }} className={cn('motion-note-row group relative cursor-default rounded-[var(--r-md)] border border-transparent px-2.5 pr-11 transition-[background-color,border-color,box-shadow,transform] duration-[var(--dur-fast)] md:pr-10', density === 'compact' ? 'py-[7px]' : 'py-2.5', selectionHighlighted
             ? 'bg-[var(--accent-soft)] ring-1 ring-[var(--accent)]/40'
             : active
                 ? 'border-[var(--border-default)] bg-[var(--bg-surface)] shadow-[var(--shadow-sm)]'
+                : openInSecondary
+                    ? 'border-[var(--accent)]/35 bg-[var(--accent-soft)]/45'
                 : 'hover:bg-[var(--bg-hover)]')}>
         <div className="flex items-start gap-1.5">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              {note.isPinned && <Pin size={10} className="shrink-0 text-[var(--accent)]"/>}
+              {note.isPinned && <Pin size={10} className="anim-mark-enter shrink-0 text-[var(--accent)]"/>}
               <h3 className={cn('min-w-0 flex-1 truncate text-[13px] leading-snug', active
             ? 'font-semibold text-[var(--accent)]'
             : 'font-medium text-[var(--text-primary)]')}>
@@ -334,30 +402,28 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
                       {part.text}
                     </mark>) : (<span key={i}>{part.text}</span>))}
               </h3>
-              {note.isStarred && <Star size={10} className="shrink-0 fill-current text-[var(--warning)]"/>}
+              {note.isStarred && <Star size={10} className="anim-mark-enter shrink-0 fill-current text-[var(--warning)]"/>}
             </div>
 
             {density === 'comfortable' && note.excerpt && (<p className="truncate-2 mt-1 text-[11.5px] leading-[1.5] text-[var(--text-tertiary)]">
                 {note.excerpt}
               </p>)}
 
-            <div className="mt-1.5 flex items-center gap-1.5 text-[10.5px] text-[var(--text-quaternary)]">
-              <span className="shrink-0 tabular">
-                {shortTime(note.deletedAt ?? note.updatedAt, now)}
-              </span>
-              {note.wordCount > 0 && (<>
-                  <span className="opacity-50">·</span>
-                  <span className="shrink-0 tabular">{note.wordCount}{t("common.words")}</span>
-                </>)}
-              {note.tags.length > 0 && density === 'comfortable' && (<span className="flex min-w-0 items-center gap-1 truncate">
-                  <span className="opacity-50">·</span>
-                  {note.tags.slice(0, 3).map((t) => (<span key={t} className="truncate text-[var(--text-tertiary)]">
-                      #{t}
-                    </span>))}
-                </span>)}
-            </div>
+            {note.tags.length > 0 && density === 'comfortable' && (<div className="mt-1.5 flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-[10.5px] text-[var(--text-tertiary)]">
+                {note.tags.map((tag) => (<span key={tag} className="max-w-[70%] shrink-0 truncate" style={{ color: tagColors.get(tag) ?? undefined }}>
+                    #{tag}
+                  </span>))}
+              </div>)}
           </div>
         </div>
+        {breakpoint === 'desktop' && (<Tooltip label={t("notes.open_to_side")} side="left">
+            <IconButton label={t("notes.open_to_side")} size="sm" active={openInSecondary} onClick={(event) => {
+                  event.stopPropagation();
+                  void openNote(note.id, { pane: 'secondary' });
+              }} className="absolute top-1.5 right-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100" >
+              <Columns2 size={14}/>
+            </IconButton>
+          </Tooltip>)}
         {breakpoint === 'mobile' && (<Tooltip label={t("common.more_actions")} side="left">
             <IconButton ref={menuButtonRef} label={t("common.more_actions")} size="sm" onClick={(event) => {
                   event.stopPropagation();
@@ -371,6 +437,7 @@ const NoteRow = memo(function NoteRow({ note, highlight, density, now, onRangeSe
 
       {menu.point && <Menu anchor={menu.point} open onClose={menu.close} items={items}/>}
       <Menu anchor={menuButtonRef} open={menuOpen} onClose={() => setMenuOpen(false)} items={items} align="end" width={240}/>
+      {moveOpen && <FolderPicker open title={t("notes.move_to_folder")} folders={folders} currentId={note.folderId} rootLabel={t("notes.remove_from_folder")} onSelect={(folderId) => void patchNote(note.id, { folderId })} onClose={() => setMoveOpen(false)}/>}
     </>);
 });
 function BulkBar() {
@@ -381,14 +448,15 @@ function BulkBar() {
     const folders = useNotes((s) => s.folders);
     const notes = useNotes((s) => s.notes);
     const toast = useUi((s) => s.toast);
-    const folderRef = useRef<HTMLButtonElement>(null);
-    const [folderMenu, setFolderMenu] = useState(false);
+    const [folderPickerOpen, setFolderPickerOpen] = useState(false);
     const busyRef = useRef(false);
     const [busy, setBusy] = useState(false);
     const ids = selectedIds.filter((id) => notes[id]);
     if (ids.length < 2)
         return null;
     const allStarred = ids.every((id) => notes[id]?.isStarred);
+    const firstFolderId = notes[ids[0]!]?.folderId ?? null;
+    const commonFolderId = ids.every((id) => notes[id]?.folderId === firstFolderId) ? firstFolderId : undefined;
     const clear = () => {
         const currentActiveId = useUi.getState().activeNoteId;
         setSelected(currentActiveId ? [currentActiveId] : []);
@@ -415,21 +483,6 @@ function BulkBar() {
             setBusy(false);
         }
     };
-    const folderItems: MenuItem[] = [
-        {
-            id: 'none',
-            label: t("notes.remove_from_folder"),
-            disabled: busy,
-            onSelect: () => void runAll(() => performAll((id) => patchNote(id, { folderId: null }), t("notes.moved_out"))),
-        },
-        ...folders.map<MenuItem>((folder, index) => ({
-            id: folder.id,
-            label: folder.name,
-            separatorBefore: index === 0,
-            disabled: busy,
-            onSelect: () => void runAll(() => performAll((id) => patchNote(id, { folderId: folder.id }), t("notes.moved"))),
-        })),
-    ];
     return (<div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center pb-3">
       <div className="anim-rise pointer-events-auto flex items-center gap-1 rounded-[var(--r-lg)] border border-[var(--border-default)] bg-[var(--bg-overlay)] p-1 pl-3 shadow-[var(--shadow-pop)]">
         <span className="mr-1 text-[11.5px] whitespace-nowrap text-[var(--text-secondary)]">{t("notes.selected")}<span className="tabular font-medium">{ids.length}</span>{t("notes.notes")}</span>
@@ -439,7 +492,7 @@ function BulkBar() {
           </IconButton>
         </Tooltip>
         <Tooltip label={t("notes.move_to_folder")}>
-          <IconButton label={t("notes.move_to_folder")} size="sm" ref={folderRef} disabled={busy} onClick={() => setFolderMenu(true)}>
+          <IconButton label={t("notes.move_to_folder")} size="sm" disabled={busy} onClick={() => setFolderPickerOpen(true)}>
             <FolderInput size={13}/>
           </IconButton>
         </Tooltip>
@@ -470,14 +523,13 @@ function BulkBar() {
         </Tooltip>
       </div>
 
-      <Menu anchor={folderRef} open={folderMenu} onClose={() => setFolderMenu(false)} items={folderItems}/>
+      {folderPickerOpen && <FolderPicker open title={t("notes.move_to_folder")} folders={folders} currentId={commonFolderId} rootLabel={t("notes.remove_from_folder")} onSelect={(folderId) => void runAll(() => performAll((id) => patchNote(id, { folderId }), folderId ? t("notes.moved") : t("notes.moved_out")))} onClose={() => setFolderPickerOpen(false)}/>}
     </div>);
 }
 function ListEmpty({ view, filtering }: {
     view: string;
     filtering: boolean;
 }) {
-    const createNote = useNotes((s) => s.createNote);
     const shortcut = (combo: string) => prettyCombo(combo).join('+');
     if (filtering) {
         return <Empty art="search" title={t("notes.no_matching_notes")} description={t("notes.try_another_search_or_press_shortcut_to_search_everywhere", { shortcut: shortcut('mod+k') })}/>;
@@ -497,7 +549,7 @@ function ListEmpty({ view, filtering }: {
         tag: { art: 'tag', title: t("notes.there_are_no_notes_with_this_tag"), desc: t("notes.write_tags_in_the_note_to_link_them_automatically") },
     };
     const item = config[view] ?? config.all!;
-    return (<Empty art={item.art} title={item.title} description={item.desc} action={view !== 'trash' && view !== 'archived' ? (<button type="button" onClick={() => void createNote()} className="inline-flex h-8 items-center gap-1.5 rounded-[var(--r-md)] border border-[var(--border-default)] px-3 text-[12.5px] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]">
+    return (<Empty art={item.art} title={item.title} description={item.desc} action={view !== 'trash' && view !== 'archived' ? (<button type="button" onClick={() => void createContextualNote()} className="inline-flex h-8 items-center gap-1.5 rounded-[var(--r-md)] border border-[var(--border-default)] px-3 text-[12.5px] text-[var(--text-secondary)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]">
             <Plus size={13}/>{t("common.new_note")}</button>) : undefined}/>);
 }
 interface Group {
@@ -518,8 +570,8 @@ function groupNotes(items: {
         number
     ][];
 }[], sort: SortKey, isTrash: boolean, now: number): Group[] {
-    const pinned = items.filter((i) => i.note.isPinned);
-    const rest = items.filter((i) => !i.note.isPinned);
+    const pinned = isTrash ? [] : items.filter((i) => i.note.isPinned);
+    const rest = isTrash ? items : items.filter((i) => !i.note.isPinned);
     const groups: Group[] = [];
     if (pinned.length)
         groups.push({ key: 'pinned', label: t("notes.pin"), items: pinned });
@@ -547,7 +599,7 @@ function groupNotes(items: {
     return groups.filter((g) => g.items.length);
 }
 function useEmptyTrash() {
-    const pull = useNotes((s) => s.pull);
+    const emptyTrashAction = useNotes((s) => s.emptyTrash);
     const toast = useUi((s) => s.toast);
     const [emptyingTrash, setEmptyingTrash] = useState(false);
     const busyRef = useRef(false);
@@ -565,12 +617,12 @@ function useEmptyTrash() {
             });
             if (!ok)
                 return;
-            const result = await api.notes.emptyTrash();
-            const refreshed = await pull({ force: true }).then(() => true, () => false);
+            const purged = await emptyTrashAction();
+            if (purged === null)
+                return;
             toast({
-                title: t("common.permanently_deleted_value0_notes", { value0: result.purged }),
-                description: refreshed ? undefined : t("settings.operation_completed_but_refresh_failed"),
-                tone: refreshed ? 'success' : 'warning',
+                title: t("common.permanently_deleted_value0_notes", { value0: purged }),
+                tone: 'success',
             });
         }
         catch (err) {

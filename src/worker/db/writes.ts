@@ -1,12 +1,17 @@
 /** Keeps tags, backlinks, full-text indexes, and change records consistent with note writes. */
-import { LIMITS } from '@shared/constants'
-import { extractTags, extractWikiLinks, normalizeLinkKey, segmentCJK } from '@shared/markdown-utils'
-import { truncateText } from '@shared/text-utils'
+import { extractTags, extractWikiLinks, normalizeLinkKey } from '@shared/markdown-utils'
 import { newId } from '../lib/id'
 
 
-export type ChangeEntity = 'note' | 'folder' | 'tag' | 'settings' | 'profile'
+export type ChangeEntity = 'note' | 'folder' | 'tag' | 'settings' | 'profile' | 'site'
 export type ChangeOp = 'upsert' | 'delete'
+
+export const FTS_QUEUE_CONFLICT_SQL = `ON CONFLICT(user_id, note_id) DO UPDATE SET
+  kind = excluded.kind,
+  created_at = CASE
+    WHEN excluded.created_at > fts_index_queue.created_at THEN excluded.created_at
+    ELSE fts_index_queue.created_at + 1
+  END`
 
 
 export const LINK_TARGET_SUBQUERY = `(SELECT candidate.id FROM notes candidate
@@ -34,8 +39,14 @@ export async function recordChange(
   entityId: string,
   op: ChangeOp,
 ): Promise<number> {
-  await changeStatement(db, userId, entity, entityId, op).run()
-  return currentCursor(db, userId)
+  const row = await db
+    .prepare(
+      `INSERT INTO changes (user_id, entity, entity_id, op, at) VALUES (?1, ?2, ?3, ?4, ?5)
+       RETURNING seq`,
+    )
+    .bind(userId, entity, entityId, op, Date.now())
+    .first<{ seq: number }>()
+  return row?.seq ?? 0
 }
 
 export async function currentCursor(db: D1Database, userId: string): Promise<number> {
@@ -120,7 +131,11 @@ export function buildNoteDerivedStatements(
         `INSERT INTO tags (id, user_id, name, color, created_at)
          SELECT json_extract(j.value, '$.id'), ?1, json_extract(j.value, '$.name'), NULL, ?2
            FROM json_each(?3) AS j
+           LEFT JOIN tags existing
+             ON existing.user_id = ?1
+            AND existing.name = json_extract(j.value, '$.name') COLLATE NOCASE
           WHERE ${shiftPlaceholders(guard, 3)}
+            AND existing.id IS NULL
          ON CONFLICT(user_id, name) DO NOTHING`,
       )
       .bind(userId, now, tagRows, ...guardValues),
@@ -132,11 +147,22 @@ export function buildNoteDerivedStatements(
       .bind(noteId, ...guardValues),
     db
       .prepare(
-        `INSERT INTO note_tags (note_id, tag_id)
-         SELECT ?1, t.id
-           FROM tags t JOIN json_each(?2) AS j
-             ON t.name = json_extract(j.value, '$.name')
-          WHERE t.user_id = ?3 AND ${shiftPlaceholders(guard, 3)}
+        `WITH ranked_tags AS (
+           SELECT candidate.id,
+                  ROW_NUMBER() OVER (
+                    PARTITION BY json_extract(j.value, '$.name')
+                    ORDER BY CASE WHEN candidate.name = json_extract(j.value, '$.name') THEN 0 ELSE 1 END,
+                             candidate.created_at ASC,
+                             candidate.id ASC
+                  ) AS rank
+             FROM json_each(?2) AS j
+             JOIN tags candidate
+               ON candidate.user_id = ?3
+              AND candidate.name = json_extract(j.value, '$.name') COLLATE NOCASE
+         )
+         INSERT INTO note_tags (note_id, tag_id)
+         SELECT ?1, id FROM ranked_tags
+          WHERE rank = 1 AND ${shiftPlaceholders(guard, 3)}
          ON CONFLICT DO NOTHING`,
       )
       .bind(noteId, tagRows, userId, ...guardValues),
@@ -174,43 +200,32 @@ export function buildNoteDerivedStatements(
   }
 
   if (ftsEnabled) {
+    const queueVersion = opts.expectedUpdatedAt ?? now
     statements.push(
       db
         .prepare(
-          `DELETE FROM notes_fts WHERE note_id = ?1
-            AND ${shiftPlaceholders(guard, 1)}`,
+          `INSERT INTO fts_index_queue (user_id, note_id, kind, created_at)
+           SELECT ?1, ?2, ?3, ?4 WHERE ${shiftPlaceholders(guard, 4)}
+           ${FTS_QUEUE_CONFLICT_SQL}`,
         )
-        .bind(noteId, ...guardValues),
+        .bind(userId, noteId, opts.deleted ? 'delete' : 'upsert', queueVersion, ...guardValues),
     )
-    if (!opts.deleted) {
-      statements.push(
-        db
-          .prepare(
-            `INSERT INTO notes_fts (note_id, user_id, title, body)
-             SELECT ?1, ?2, ?3, ?4 WHERE ${shiftPlaceholders(guard, 4)}`,
-          )
-          .bind(
-            noteId,
-            userId,
-            segmentCJK(title),
-            segmentCJK(truncateText(content, LIMITS.ftsContentChars)),
-            ...guardValues,
-          ),
-      )
-    }
   }
 
-  if (opts.titleChanged !== false) {
+  if (opts.titleChanged === true) {
     const currentKey = normalizeLinkKey(title)
     const previousKey = normalizeLinkKey(opts.previousTitle ?? title)
     statements.push(
       db
         .prepare(
-          `UPDATE links SET target_note_id = ${LINK_TARGET_SUBQUERY}
+          `UPDATE links SET target_note_id = CASE
+               WHEN target_key = ?3 AND target_note_id = ?4 THEN ?4
+               ELSE ${LINK_TARGET_SUBQUERY}
+             END
              WHERE user_id = ?1 AND target_key IN (?2, ?3)
-               AND ${shiftPlaceholders(guard, 3)}`,
+               AND ${shiftPlaceholders(guard, 4)}`,
         )
-        .bind(userId, currentKey, previousKey, ...guardValues),
+        .bind(userId, currentKey, previousKey, noteId, ...guardValues),
     )
   }
 
@@ -224,7 +239,9 @@ function shiftPlaceholders(sql: string, offset: number): string {
 export async function pruneOrphanTags(db: D1Database, userId: string): Promise<void> {
   await db
     .prepare(
-      `DELETE FROM tags WHERE user_id = ?1 AND id NOT IN (SELECT tag_id FROM note_tags)`,
+      `DELETE FROM tags
+        WHERE user_id = ?1 AND is_manual = 0
+          AND id NOT IN (SELECT tag_id FROM note_tags)`,
     )
     .bind(userId)
     .run()

@@ -9,6 +9,7 @@ export const ZH_CN_MESSAGES = {
     "api.error.internal": "服务器内部错误",
     "api.error.invalid_avatar": "头像格式无效或图片过大",
     "api.error.invalid_credentials": "用户名或密码错误",
+    "api.error.invalid_two_factor_code": "验证码错误或已被使用",
     "api.error.invalid_profile_name": "显示名称格式不正确",
     "api.error.invalid_username": "用户名格式不正确",
     "api.error.not_found": "请求的内容不存在",
@@ -17,6 +18,11 @@ export const ZH_CN_MESSAGES = {
     "api.error.server_misconfigured": "服务器配置不完整",
     "api.error.storage_unavailable": "存储服务暂时不可用",
     "api.error.too_many_attempts": "尝试次数过多，请稍后再试",
+    "api.error.two_factor_already_enabled": "二次验证已启用",
+    "api.error.two_factor_challenge_expired": "本次登录验证已过期，请重新输入密码",
+    "api.error.two_factor_not_enabled": "尚未启用二次验证",
+    "api.error.two_factor_setup_expired": "本次设置已过期，请重新开始",
+    "api.error.two_factor_unavailable": "验证器密钥暂时不可用，请改用恢复码",
     "api.error.unauthenticated": "请先登录",
     "api.error.username_taken": "用户名已被使用",
     "api.error.weak_password": "密码强度不足",
@@ -64,20 +70,35 @@ export const ZH_CN_MESSAGES = {
     "api.request_failed_status": "请求失败（{status}）",
     "api.request_timed_out": "请求超时",
     "app.missing_root_mount_point": "缺少 #root 挂载点",
+    "app.something_went_wrong": "出现了一点问题",
+    "app.error_boundary_description": "发生了一个意外错误，请刷新页面继续使用。",
+    "app.reload": "刷新",
+    "app.section_unavailable": "该区域暂时不可用",
     "auth.already_have_an_account_sign_in": "已有账号？去登录",
     "auth.between_the_paper_and_ink_the_pen_comes_to_life_an_inkstone_is_used_to_p": "纸墨之间，落笔生辉，安放所有想法。",
     "auth.confirm_password": "确认密码",
     "auth.create_owner_account": "创建所有者账号",
     "auth.create_the_owner_account_this_step_appears_only_once": "创建你的所有者账号，这一步只会出现一次",
+    "auth.authenticator_code": "验证器验证码",
+    "auth.back_to_password": "返回密码登录",
     "auth.enter_a_username_and_password": "请输入用户名和密码",
+    "auth.enter_authenticator_code": "请输入验证器应用中的 6 位验证码",
+    "auth.enter_recovery_code": "请输入一枚恢复码",
     "auth.live_split_view_markdown_preview_realtime_multi_device_sync_multiple_web": "Markdown 分屏实时预览 · 多端实时同步 · 多路 WebDAV / S3 备份",
     "auth.network_error_try_again": "网络错误，请重试",
     "auth.no_account_create_one": "没有账号？注册一个",
     "auth.password_minimum_8_characters": "密码（至少 8 位）",
+    "auth.recovery_code": "恢复码",
+    "auth.recovery_code_used": "已使用恢复码登录",
+    "auth.recovery_codes_remaining": "还剩 {count} 枚未使用的恢复码；如有需要，请到设置中重新生成。",
     "auth.self_hosted_on_cloudflare_workers_your_data_is_yours": "私有笔记 · 数据由你掌控",
     "auth.sign_in": "登录",
     "auth.sign_up": "注册",
     "auth.this_is_a_private_instance_registration_is_closed_so_only_existing_accou": "这是一个私有实例，注册已关闭，只有现有账号可以登录",
+    "auth.two_step_verification_description": "密码验证成功，请再完成一次二次验证以登录。",
+    "auth.use_authenticator_code": "使用验证器验证码",
+    "auth.use_recovery_code": "使用恢复码",
+    "auth.verify_and_sign_in": "验证并登录",
     "command.add_current_note_to_favorites": "收藏当前笔记",
     "command.archive_current_note": "归档当前笔记",
     "command.change_accent_color": "更换强调色",
@@ -116,6 +137,31 @@ export const ZH_CN_MESSAGES = {
     "command.switch_to_light_theme": "切换到浅色主题",
     "command.triggered_as_you_type": "输入即触发",
     "command.use_nearly_every_action_without_touching_the_mouse": "几乎所有操作都可以不碰鼠标",
+    "attachments.cleanup": "清理未引用",
+    "attachments.cleanup_confirm": "清理未引用附件？",
+    "attachments.cleanup_confirm_description": "只删除不再出现在任何笔记正文中的附件，此操作不可撤销。",
+    "attachments.cleanup_failed": "清理失败",
+    "attachments.cleaned_value0": "已清理 {value0} 个附件",
+    "attachments.delete": "删除附件",
+    "attachments.delete_confirm_value0": "删除附件「{value0}」？",
+    "attachments.delete_failed": "删除附件失败",
+    "attachments.deleted": "附件已删除",
+    "attachments.empty": "还没有附件。在笔记里粘贴或拖入图片即可上传。",
+    "attachments.filter_all": "全部",
+    "attachments.filter_documents": "文档",
+    "attachments.filter_images": "图片",
+    "attachments.filter_other": "其他",
+    "attachments.freed_value0": "释放 {value0}",
+    "attachments.load_failed": "加载更多附件失败",
+    "attachments.load_more": "加载更多",
+    "attachments.manage": "管理附件",
+    "attachments.manage_description": "查看、筛选和删除所有已上传的附件。",
+    "attachments.none_match": "没有匹配的附件",
+    "attachments.nothing_to_clean": "没有需要清理的附件",
+    "attachments.referenced_value0": "引用 {value0} 次",
+    "attachments.shown_value0": "已显示 {value0} 个附件",
+    "attachments.total_value0": "共 {value0} 个附件",
+    "attachments.unreferenced": "未引用",
     "common.about": "约",
     "common.access_control": "访问控制",
     "common.access_passcode": "访问口令",
@@ -127,12 +173,14 @@ export const ZH_CN_MESSAGES = {
     "common.close": "关闭",
     "common.collapse": "收起",
     "common.command_palette": "命令面板",
+    "common.continue": "继续",
     "common.copied": "已复制",
     "common.copy": "复制",
     "common.created": "创建于",
     "common.current_note": "当前笔记",
     "common.delete": "删除",
     "common.delete_failed": "删除失败",
+    "common.download": "下载",
     "common.edit": "编辑",
     "common.empty_trash": "清空回收站？",
     "common.exit": "退出",
@@ -152,6 +200,8 @@ export const ZH_CN_MESSAGES = {
     "common.new_folder": "新建文件夹",
     "common.new_note": "新建笔记",
     "common.note": "笔记",
+    "common.off": "已关闭",
+    "common.on": "已开启",
     "common.open": "打开",
     "common.open_registration": "开放注册",
     "common.open_settings": "打开设置",
@@ -198,15 +248,50 @@ export const ZH_CN_MESSAGES = {
     "editor.uploading_value0": "![上传中 {value0}…]()",
     "feedback.dismiss": "关闭提示",
     "graph.building_graph": "正在计算关系…",
+    "graph.all_folders": "全部文件夹",
+    "graph.all_tags": "全部标签",
+    "graph.appearance": "外观",
     "graph.choose_a_note": "选择笔记…",
     "graph.connect_notes_with_wiki_links_and_their_graph_will_appear_here": "用 [[双链]] 把笔记连起来，这里就会长出一张网",
     "graph.could_not_load_graph": "无法加载关系图谱",
+    "graph.create_note": "创建这篇笔记",
+    "graph.depth": "链接深度",
+    "graph.direction_counts": "入 {incoming} · 出 {outgoing}",
     "graph.drag_to_pan_scroll_to_zoom_click_a_node_to_open_it_use_the_selector_abov": "拖动平移 · 滚轮缩放 · 点击节点打开笔记；键盘可用上方选择器",
     "graph.graph_canvas_drag_to_pan_and_scroll_to_zoom_keyboard_users_can_open_note": "关系图谱画布：可拖动平移、滚轮缩放；键盘用户可用上方选择器打开笔记",
     "graph.links": "条链接",
+    "graph.filters": "筛选",
+    "graph.fit": "适应画布",
+    "graph.folder": "文件夹",
+    "graph.forces": "布局力",
+    "graph.global": "全局",
+    "graph.graph_canvas_accessible": "关系图谱画布。方向键选择节点，加减号缩放，回车打开，Home 适应画布。",
+    "graph.group_by": "按颜色分组",
+    "graph.group_none": "不分组",
+    "graph.interaction_hint": "拖动平移 · 滚轮或双指缩放 · 点击打开 · 右键查看更多",
+    "graph.link_distance": "链接长度",
+    "graph.local": "局部",
+    "graph.local_requires_note": "请先打开一篇笔记，再查看它的局部图谱",
+    "graph.make_local_center": "以此笔记为中心",
+    "graph.node_actions": "节点操作",
+    "graph.node_size": "节点大小",
     "graph.notes": "篇笔记 ·",
     "graph.nothing_to_graph_yet": "还没有可以画的东西",
+    "graph.open_note": "打开笔记",
+    "graph.open_to_right": "在右侧打开",
     "graph.open_a_note_from_the_graph": "打开图谱中的笔记",
+    "graph.repulsion": "排斥力",
+    "graph.restore_defaults": "恢复默认外观",
+    "graph.scope": "图谱范围",
+    "graph.search_notes": "筛选笔记…",
+    "graph.settings": "图谱设置",
+    "graph.show_arrows": "显示链接方向",
+    "graph.show_labels": "显示标题",
+    "graph.show_orphans": "显示孤立笔记",
+    "graph.show_unresolved": "显示尚未创建的笔记",
+    "graph.showing_limit": "显示 {shown} / {total} 篇；继续筛选可缩小范围",
+    "graph.tag": "标签",
+    "graph.unresolved_short": "篇未创建",
     "graph.reset": "复位",
     "markdown.abstract": "摘要",
     "markdown.code": "代码",
@@ -281,9 +366,12 @@ export const ZH_CN_MESSAGES = {
     "notes.failed_to_open_note": "打开笔记失败",
     "notes.filter_in_this_view": "在此视图中筛选…",
     "notes.full_sync_pagination_data_is_incomplete": "全量同步分页信息不完整",
+    "notes.sync_pagination_data_is_incomplete": "同步分页信息不完整",
     "notes.keep_notes_here_when_you_want_them_out_of_the_way_but_not_deleted": "暂时不看但又不想删的笔记可以放这里",
     "notes.keep_this_page_open_and_reconnect_as_soon_as_possible_closing_it_may_mak": "请保持页面打开并尽快恢复网络，否则关闭页面后内容可能无法恢复。",
     "notes.modified": "按修改时间",
+    "notes.recently_deleted_first": "最近删除的在前",
+    "notes.recently_edited_first": "最近编辑的在前",
     "notes.move_to_folder": "移动到文件夹",
     "notes.move_to_value0": "移到「{value0}」",
     "notes.move_value0_notes_to_trash": "把 {value0} 篇笔记移到回收站？",
@@ -300,6 +388,7 @@ export const ZH_CN_MESSAGES = {
     "notes.offline_modifications_have_been_restored_as_a_new_note": "离线修改已恢复为一篇新笔记。",
     "notes.open_a_copy": "打开副本",
     "notes.open_navigation": "打开导航",
+    "notes.open_to_side": "在侧边打开",
     "notes.other": "其他",
     "notes.permanent_deletion_failed": "彻底删除失败",
     "notes.permanent_deletion_was_canceled_because_the_note_body_is_not_safely_sync": "正文尚未安全同步，已取消彻底删除",
@@ -354,13 +443,22 @@ export const ZH_CN_MESSAGES = {
     "pwa.install_description": "在独立窗口中打开 Inkstone，并让应用外壳保持离线可用。",
     "pwa.install_inkstone": "安装 Inkstone",
     "pwa.installed": "已安装",
-    "pwa.offline_ready": "Inkstone 已可离线打开",
-    "pwa.offline_ready_description": "应用外壳已保存在这台设备上。",
+    "pwa.offline_ready": "完整离线资源已准备好",
+    "pwa.offline_ready_description": "Inkstone 的所有功能现在都能在这台设备上断网打开。",
+    "pwa.complete_offline_access": "完整离线能力",
+    "pwa.complete_offline_preparing_description": "Inkstone 会保持流畅，并在后台安静地补齐其余功能。",
+    "pwa.complete_offline_ready": "全部功能已就绪",
+    "pwa.complete_offline_ready_description": "从未打开过的功能现在也可以离线使用。",
+    "pwa.complete_offline_retry_description": "已下载的资源会保留，网络恢复后将自动继续。",
+    "pwa.preparing_progress": "正在准备 {completed}/{total}",
+    "pwa.waiting_for_network": "等待继续",
     "pwa.refresh_now": "立即刷新",
     "pwa.update_ready": "应用更新已就绪",
     "pwa.update_ready_description": "方便时刷新即可；刷新前会先保存待处理的笔记更改。",
     "session.could_not_connect_to_the_server": "无法连接服务器",
     "session.could_not_save_settings": "设置未能保存",
+    "session.logout_failed": "无法安全退出登录",
+    "session.logout_pending_changes": "有 {count} 条修改尚未同步，退出登录将丢失这些修改。仍要退出吗？",
     "settings.20_gb_free_25_gb_with_referral_code": "免费 20 GB，推荐码后 25 GB",
     "settings.about": "关于",
     "settings.checked_at": "检查于",
@@ -379,13 +477,16 @@ export const ZH_CN_MESSAGES = {
     "settings.update_dialog_title": "发现新版本",
     "settings.update_manual_fork_hint": "Inkstone 不会自动修改或部署你的 Fork。请在官方仓库确认变更后手动同步。",
     "settings.accent_color": "强调色",
-    "settings.accent.amber": "黄铜",
-    "settings.accent.celadon": "青瓷",
+    "settings.background_color": "背景色",
+    "settings.background_paper": "暖纸",
+    "settings.background_white": "纯白",
+    "settings.accent.amber": "金盏黄",
+    "settings.accent.celadon": "翡翠绿",
     "settings.accent.cinnabar": "朱砂",
-    "settings.accent.graphite": "石墨",
-    "settings.accent.indigo": "靛蓝",
-    "settings.accent.terracotta": "赤陶",
-    "settings.accent.wisteria": "紫藤",
+    "settings.accent.graphite": "雾岩灰",
+    "settings.accent.indigo": "深海蓝",
+    "settings.accent.terracotta": "湖水青",
+    "settings.accent.wisteria": "鸢尾紫",
     "settings.access_key_id": "Access Key ID",
     "settings.account": "账户",
     "settings.action_failed_try_again": "操作失败，请重试",
@@ -413,8 +514,16 @@ export const ZH_CN_MESSAGES = {
     "settings.back_up_now": "立即备份",
     "settings.backup": "备份",
     "settings.backup_completed_value0_targets": "备份完成 · {value0} 个目标",
+    "settings.backup_complete_marker_mismatch": "备份完成标记与清单不一致：{value0}",
+    "settings.backup_duplicate_path": "备份目录中存在重复路径：{value0}",
     "settings.backup_failed": "备份失败",
-    "settings.backup_format": "打包方式",
+    "settings.backup_file_checksum_failed": "备份文件校验失败：{value0}",
+    "settings.backup_file_size_mismatch": "备份文件大小不匹配：{value0}",
+    "settings.backup_manifest_not_found": "没有找到 Inkstone Markdown 备份清单，请选择解压后的完整备份目录（应包含 manifest.json、COMPLETE、notes 等）",
+    "settings.backup_manifest_invalid": "已完成快照的清单无效或版本不受支持：{value0}",
+    "settings.backup_missing_file": "完整备份缺少文件：{value0}",
+    "settings.backup_no_complete_snapshot": "这个目录里没有带有效 COMPLETE 标记的完整快照",
+    "settings.backup_newer_snapshot_skipped": "较新的快照（{value0}）未完成，已改为恢复最近一个完整快照",
     "settings.backup_target": "备份目标",
     "settings.backup_target_added": "已添加备份目标",
     "settings.backup_target_deleted": "已删除备份目标",
@@ -465,7 +574,7 @@ export const ZH_CN_MESSAGES = {
     "settings.display_name_saved": "显示名称已保存",
     "settings.download_json": "下载 JSON",
     "settings.download_zip": "下载 ZIP",
-    "settings.each_backup_goes_independently_to_every_enabled_target_it_includes_notes": "每次备份会同时投递到所有启用的目标，彼此独立。备份包含笔记、目录、标签和附件，可直接从 ZIP 完整恢复。",
+    "settings.each_backup_goes_independently_to_every_enabled_target_it_includes_notes": "每个目标都会收到一个可直接下载的完整 ZIP：笔记保持文件夹层级，归档、回收站和原始附件分开放置；生成和上传全程采用流式处理。",
     "settings.edit_backup_target": "编辑备份目标",
     "settings.editor": "编辑器",
     "settings.endpoint": "端点",
@@ -504,10 +613,8 @@ export const ZH_CN_MESSAGES = {
     "settings.import_failed": "导入失败",
     "settings.operation_completed_but_refresh_failed": "操作已完成，但页面刷新失败，请稍后重试",
     "settings.import_file": "导入文件",
-    "settings.includes_every_note_folder_tag_and_attachment_for_a_complete_restore_plu": "包含全部笔记、目录、标签和附件，可完整还原；同时保留可直接阅读的 .md",
+    "settings.includes_every_note_folder_tag_and_attachment_for_a_complete_restore_plu": "下载与自动备份相同的完整 ZIP；超大备份可解压后选择目录，Inkstone 会分批校验并恢复",
     "settings.indent_width": "缩进宽度",
-    "settings.individual_file_mirror": "逐文件镜像",
-    "settings.individual_files": "逐文件",
     "settings.inkstone_import_reminder": "[Inkstone] 导入提醒:",
     "settings.interface_density": "界面密度",
     "settings.interface_language": "界面语言",
@@ -531,6 +638,80 @@ export const ZH_CN_MESSAGES = {
     "settings.look_at_home_together": "会像这样和谐地排在一起。",
     "settings.maintenance": "维护",
     "settings.manual": "手动",
+    "settings.mcp": "MCP",
+    "settings.mcp_ai_search": "AI 语义搜索",
+    "settings.mcp_ai_search_clear": "清空索引",
+    "settings.mcp_ai_search_clear_desc": "删除本账号存储的全部向量并取消待处理任务。之后搜索会回退为关键词匹配，直到你重新建立索引。",
+    "settings.mcp_ai_search_clear_title": "清空 AI 搜索索引？",
+    "settings.mcp_ai_search_cleared": "已清空 {count} 条向量",
+    "settings.mcp_ai_search_desc": "笔记在你自己 Cloudflare 账号内私有嵌入，向量存放在你自己的数据库，每个账号独立索引。搜索工具会自动融合关键词与语义结果，内容变化会在后台建立索引。",
+    "settings.mcp_ai_search_disabled": "已关闭 AI 搜索",
+    "settings.mcp_ai_search_enabled": "已开启 AI 搜索，正在建立索引…",
+    "settings.mcp_ai_search_indexed": "已索引 {count} 篇笔记",
+    "settings.mcp_ai_search_pending": "{count} 篇待处理",
+    "settings.mcp_ai_search_reindex": "重建索引",
+    "settings.mcp_ai_search_reindex_desc": "把本账号的全部笔记重新加入嵌入队列，已有向量会被替换。",
+    "settings.mcp_ai_search_reindex_title": "重建 AI 搜索索引？",
+    "settings.mcp_ai_search_reindexed": "已将 {count} 篇笔记加入重建队列",
+    "settings.mcp_ai_search_unavailable": "不可用",
+    "settings.mcp_ai_search_unavailable_desc": "这个部署还没有配置 Workers AI，因此 AI 搜索保持关闭，使用关键词搜索。在 wrangler.toml 中添加 AI 绑定即可启用。",
+    "settings.mcp_api_key_copy_warning": "请立即复制此密钥——之后不会再显示",
+    "settings.mcp_api_key_create": "创建密钥",
+    "settings.mcp_api_key_created": "API 密钥已创建",
+    "settings.mcp_api_key_name": "API 密钥名称",
+    "settings.mcp_api_key_name_placeholder": "例如：我的脚本、家庭电脑",
+    "settings.mcp_api_key_name_required": "请为 API 密钥填写名称",
+    "settings.mcp_api_key_revoke": "撤销密钥",
+    "settings.mcp_api_key_revoke_desc": "{name} 会立即失效，使用它的客户端将失去访问权限，需要创建新密钥。",
+    "settings.mcp_api_key_revoke_title": "撤销这个 API 密钥？",
+    "settings.mcp_api_key_revoked": "API 密钥已撤销",
+    "settings.mcp_api_key_show_once": "服务器只保存密钥的哈希；如果丢失，只能创建新的。",
+    "settings.mcp_api_key_unused": "从未使用",
+    "settings.mcp_api_key_used": "上次使用于 {time}",
+    "settings.mcp_api_keys": "API 密钥",
+    "settings.mcp_api_keys_desc": "给无法走 OAuth 的小型、通用或无名 MCP 客户端使用。用普通的 Bearer 请求头认证；密钥在创建时继承上方读写权限，可随时撤销。",
+    "settings.mcp_api_keys_empty": "还没有 API 密钥。为脚本或最小化 MCP 客户端创建一个吧。",
+    "settings.mcp_connect_clients": "连接客户端",
+    "settings.mcp_connect_desc": "示例采用各客户端当前的远程 HTTP 与 OAuth 配置格式；支持固定 scope 的客户端会按当前设置生成权限。最终权限以浏览器授权页为准，修改权限后需要重新连接或登录。",
+    "settings.mcp_connected_clients": "已授权客户端",
+    "settings.mcp_copied": "已复制",
+    "settings.mcp_copy": "复制",
+    "settings.mcp_disabled": "已停用",
+    "settings.mcp_demo_desc": "这里按已配置的 Inkstone 服务器完整展示全部 MCP 选项。端点、凭据、客户端和索引统计均为示例；Demo 中所有 MCP 操作都已禁用。",
+    "settings.mcp_demo_title": "仅展示的 MCP 预览",
+    "settings.mcp_enable": "启用 MCP",
+    "settings.mcp_enable_desc": "控制所有账号的远程 MCP 服务；停用期间，已有授权也无法继续访问。",
+    "settings.mcp_endpoint": "远程 MCP 端点",
+    "settings.mcp_endpoint_desc": "采用 Streamable HTTP 与 OAuth 2.1（PKCE、受保护资源发现、动态客户端注册、刷新令牌）供完整 MCP 客户端使用，同时提供可撤销的静态 API 密钥（Bearer 令牌）供小型通用客户端使用。",
+    "settings.mcp_generic_client": "通用 / 无名客户端（API 密钥）",
+    "settings.mcp_generic_client_snippet": "# 任意小型或无名 MCP 客户端 / 脚本 / SDK（先在上方“API 密钥”处创建一个密钥）\nclaude mcp add-json inkstone '{bearerJson}'\n\n# 或直接在任意 MCP SDK 中设置请求头：{ \"Authorization\": \"Bearer ink_...\" }\n# 用 curl 快速验证端点：\ncurl -X POST \"{endpoint}\" \\\n  -H \"Authorization: Bearer <API_KEY>\" \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Accept: application/json, text/event-stream\" \\\n  -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{},\"clientInfo\":{\"name\":\"curl\",\"version\":\"1.0\"}}}'",
+    "settings.mcp_grant_revoked": "已撤销客户端访问权",
+    "settings.mcp_granted_at": "授权于 {time}",
+    "settings.mcp_intro": "让 Codex、Claude Code、Hermes、OpenClaw 以及其他标准 MCP 客户端搜索、引用、读取笔记，并在明确授权后安全编辑笔记。",
+    "settings.mcp_load_failed": "无法读取 MCP 设置",
+    "settings.mcp_loading": "正在读取 MCP 设置…",
+    "settings.mcp_no_clients": "这个账号还没有授权任何客户端。",
+    "settings.mcp_permissions": "权限",
+    "settings.mcp_privacy": "隐私边界",
+    "settings.mcp_privacy_desc": "MCP 地址需要能从互联网访问，客户端才能连接；但每次笔记操作都必须通过 OAuth，并且只能访问登录账号自己的数据。AI Search 没有公开查询端点，每个账号使用独立索引。工具主动读取的内容会按预期返回给所连接的 AI 客户端，之后受该客户端自身的隐私政策约束。",
+    "settings.mcp_private_knowledge": "私有 AI 知识库",
+    "settings.mcp_reconnect_notice": "请重新连接客户端或重新登录，以刷新它持有的 OAuth 权限。",
+    "settings.mcp_revoke": "撤销访问权",
+    "settings.mcp_revoke_all": "全部撤销",
+    "settings.mcp_revoke_all_desc": "这个账号连接的全部客户端都会退出登录，今后仍可重新授权。",
+    "settings.mcp_revoke_all_title": "撤销全部客户端的访问权？",
+    "settings.mcp_revoke_desc": "{name} 会立即失去访问这个账号笔记的权限。",
+    "settings.mcp_revoke_title": "撤销这个客户端？",
+    "settings.mcp_revoked_count": "已撤销 {count} 个客户端授权",
+    "settings.mcp_scope_read": "读取",
+    "settings.mcp_scope_trash": "移入回收站",
+    "settings.mcp_scope_write": "写入",
+    "settings.mcp_trash_access": "允许移入回收站",
+    "settings.mcp_trash_access_desc": "这是独立的高风险权限，只能软删除；MCP 永远不提供永久清除功能。",
+    "settings.mcp_transport": "HTTP · OAuth 2.1 / Bearer",
+    "settings.mcp_updated": "MCP 设置已更新",
+    "settings.mcp_write_access": "允许修改笔记库",
+    "settings.mcp_write_access_desc": "可修改笔记、目录、标签、属性和附件，也可创建共享链接或运行已配置的备份；写入带有冲突保护和幂等操作 ID。",
     "settings.math": "数学公式",
     "settings.monospace": "等宽",
     "settings.name": "名称",
@@ -585,6 +766,8 @@ export const ZH_CN_MESSAGES = {
     "settings.registration_open": "已开放注册",
     "settings.registration_status": "注册状态",
     "settings.region": "区域",
+    "settings.restore_backup_folder": "恢复 Inkstone 备份文件夹",
+    "settings.restore_backup_folder_description": "选择新 ZIP 解压后的目录，或旧版同时包含 attachments 和 snapshots 的备份根目录；Inkstone 会验证 COMPLETE 并分批恢复",
     "settings.reloaded_all_data": "已同步最新内容",
     "settings.render_and_using_katex": "显示行内公式和块级公式",
     "settings.render_mermaid_code_blocks_into_flowcharts": "将 Mermaid 代码块显示为图表",
@@ -598,6 +781,7 @@ export const ZH_CN_MESSAGES = {
     "settings.scroll_sync": "滚动同步",
     "settings.sec": "秒",
     "settings.select_file": "选择文件",
+    "settings.select_backup_folder": "选择备份文件夹",
     "settings.selected_avatar": "当前选择",
     "settings.select_object_read_write_for_permissions_and_create_it_directly": "，权限全选“对象读和写”，直接创建。",
     "settings.secret_access_key": "Secret Access Key",
@@ -608,7 +792,6 @@ export const ZH_CN_MESSAGES = {
     "settings.sign_in_security": "登录安全",
     "settings.sign_up": "前往注册",
     "settings.simplified_chinese": "简体中文",
-    "settings.single_archive": "单个压缩包",
     "settings.spellcheck": "拼写检查",
     "settings.standard": "标准",
     "settings.store_backups_in_this_directory_or_leave_blank_to_use_the_root_directory": "备份会放在这个目录下，留空则放在根目录",
@@ -625,6 +808,46 @@ export const ZH_CN_MESSAGES = {
     "settings.then_open": "然后打开",
     "settings.there_are_no_attachments_to_clean": "没有需要清理的附件",
     "settings.this_device_will_be_signed_out_and_its_local_cache_cleared_cloud_data_is": "此设备的会话会被服务端撤销，本地缓存清空；云端数据不受影响。",
+    "settings.totp_authenticator_code": "当前验证器验证码",
+    "settings.totp_code_or_recovery": "验证器验证码或恢复码",
+    "settings.totp_code_or_recovery_placeholder": "6 位验证码或恢复码",
+    "settings.totp_confirm_code": "输入验证器应用当前显示的 6 位验证码",
+    "settings.totp_confirm_disable": "关闭二次验证",
+    "settings.totp_confirm_enable": "验证并开启",
+    "settings.totp_copy_all": "全部复制",
+    "settings.totp_copy_failed": "复制失败，请手动选择并复制。",
+    "settings.totp_disable": "关闭",
+    "settings.totp_disable_description": "请输入当前密码，以及验证器验证码或一枚未使用的恢复码。其他设备会被退出登录。",
+    "settings.totp_disable_title": "确定关闭二次验证？",
+    "settings.totp_disabled": "二次验证已关闭",
+    "settings.totp_disabled_description": "开启后，新设备登录在密码之后还必须通过验证器应用验证。",
+    "settings.totp_enable": "开启",
+    "settings.totp_enable_password_description": "关联验证器应用前，请先确认当前密码。",
+    "settings.totp_enabled": "二次验证已开启",
+    "settings.totp_enabled_description": "新登录必须提供验证器验证码或恢复码，目前还剩 {count} 枚恢复码。",
+    "settings.totp_enter_code_or_recovery": "请输入验证器验证码或恢复码",
+    "settings.totp_enter_six_digit_code": "请输入有效的 6 位验证器验证码",
+    "settings.totp_generate_new_codes": "更换恢复码",
+    "settings.totp_load_failed": "无法读取二次验证状态",
+    "settings.totp_loading": "正在读取二次验证状态…",
+    "settings.totp_manage": "管理",
+    "settings.totp_manual_secret": "手动设置密钥",
+    "settings.totp_other_sessions_revoked": "其他已登录设备均已退出。",
+    "settings.totp_qr_code_title": "验证器设置二维码",
+    "settings.totp_recovery_codes": "恢复码",
+    "settings.totp_recovery_codes_copied": "恢复码已复制",
+    "settings.totp_recovery_codes_once": "每枚恢复码只能使用一次。请存放在私密且可靠的位置；之后不会再次显示。",
+    "settings.totp_recovery_codes_replaced": "恢复码已更换",
+    "settings.totp_recovery_file_title": "Inkstone 二次验证恢复码",
+    "settings.totp_recovery_file_warning": "请妥善保密。每枚恢复码只能使用一次，可用于登录或关闭二次验证。",
+    "settings.totp_regenerate_description": "更换后，之前的所有恢复码会立即失效。请使用当前密码和验证器验证码确认。",
+    "settings.totp_save_recovery_codes": "现在保存这些恢复码",
+    "settings.totp_saved_codes": "我已妥善保存",
+    "settings.totp_scan_qr": "使用验证器应用扫码",
+    "settings.totp_scan_qr_description": "任意兼容 TOTP 的验证器都可以。扫码后，输入应用当前显示的 6 位验证码完成绑定。",
+    "settings.totp_secret_copied": "设置密钥已复制",
+    "settings.totp_title": "二次验证（TOTP）",
+    "settings.totp_unavailable_description": "服务器凭据保险库不可用，暂时无法安全开启 TOTP。",
     "settings.to_add_users_open_registration_under_settings_account_they_can_then_crea": "需要多人使用时，请到「设置 → 账户」开启注册；开启后即可使用用户名密码创建账号。",
     "settings.total_words": "总字数",
     "settings.try_this_when_your_search_results_don_t_look_right": "搜索结果不对劲时试试这个",
@@ -634,8 +857,6 @@ export const ZH_CN_MESSAGES = {
     "settings.up_to_10_gb": "最高 10 GB",
     "settings.update_failed": "更新失败",
     "settings.upload_local_image": "上传本地图片",
-    "settings.upload_individual_files_so_they_remain_browsable_and_editable_in_the_sto": "逐个文件上传，可以直接在网盘里浏览和编辑",
-    "settings.upload_one_zip_to_minimize_requests_best_for_rate_limited_storage_provid": "打成一个 ZIP 上传，请求数最少，适合有限流的网盘",
     "settings.uploaded_avatar": "已上传的本地图片",
     "settings.use_name_avatar": "使用姓名头像",
     "settings.username_is_sign_in_id": "@用户名是登录标识，不会随显示名称一起改变。",
@@ -671,6 +892,7 @@ export const ZH_CN_MESSAGES = {
     "share.generate_public_link": "生成公开链接",
     "share.incorrect_passcode": "口令不正确",
     "share.enter_a_passcode": "请先输入访问口令",
+    "share.passcode_too_short": "访问口令至少需要 4 个字符",
     "share.keep_current_expiration": "保持当前",
     "share.leave_blank_to_keep_the_current_passcode": "留空表示保持原来的口令不变",
     "share.link_revoked": "链接已撤销",
@@ -711,6 +933,7 @@ export const ZH_CN_MESSAGES = {
     "shell.quick_open": "快速跳转笔记",
     "shell.resize_navigation_panel": "调整导航栏宽度",
     "shell.resize_note_list": "调整笔记列表宽度",
+    "shell.resize_note_panes": "调整两个笔记窗格的宽度",
     "shell.save_now": "立即保存",
     "shell.saving": "正在保存…",
     "shell.search_all_notes": "全文搜索",
@@ -731,7 +954,22 @@ export const ZH_CN_MESSAGES = {
     "sidebar.failed_to_create_folder": "创建文件夹失败",
     "sidebar.log_out": "退出登录",
     "sidebar.member": "成员",
+    "sidebar.move_earlier": "向前移动",
     "sidebar.move_failed": "移动失败",
+    "sidebar.move_later": "向后移动",
+    "sidebar.move_out_one_level": "移出当前文件夹",
+    "folders.appearance": "文件夹外观",
+    "folders.choose_parent": "选择上级文件夹",
+    "folders.color": "颜色",
+    "folders.delete_contents_move_up": "其中 {value0} 篇直属笔记和 {value1} 个直属子文件夹会向上移动一级；子文件夹里的笔记仍保留在原子文件夹中。",
+    "folders.icon": "图标",
+    "folders.includes_subfolders": "包含所有子文件夹中的笔记",
+    "folders.move_to": "移动到…",
+    "folders.no_color": "不设颜色",
+    "folders.no_icon": "默认图标",
+    "folders.no_match": "没有匹配的文件夹",
+    "folders.search": "搜索文件夹",
+    "folders.top_level": "最外层",
     "sidebar.new_subfolder": "新建子文件夹",
     "sidebar.rename": "重命名",
     "sidebar.rename_failed": "重命名失败",
@@ -740,6 +978,27 @@ export const ZH_CN_MESSAGES = {
     "sidebar.switch_to_light": "切换到浅色",
     "sidebar.the_value0_notes_inside_move_up_one_level_and_are_not_deleted": "里面的 {value0} 篇笔记会移动到上一层，不会被删除。",
     "sidebar.this_folder_is_empty": "这个文件夹是空的。",
+    "tags.change_color": "更改颜色",
+    "tags.clear_color": "清除颜色",
+    "tags.color": "颜色",
+    "tags.color_failed": "更新颜色失败",
+    "tags.create_failed": "新建标签失败",
+    "tags.create_first": "新建第一个标签",
+    "tags.delete": "删除标签",
+    "tags.delete_confirm_value0": "删除标签「{value0}」？该标签也会从相关笔记的正文中移除。",
+    "tags.delete_failed": "删除标签失败",
+    "tags.deleted": "标签已删除",
+    "tags.delete_description_value0": "当前有 {value0} 篇活跃笔记使用它；归档和回收站中的匹配内容也会一并处理。操作前会为改动的笔记保留版本。",
+    "tags.invalid_name": "标签名不能包含空格或 #",
+    "tags.merge": "合并标签",
+    "tags.merge_confirm_value0_value1": "将「{value0}」合并到「{value1}」？",
+    "tags.merge_description": "两个标签会合并为一个，相关笔记正文和元数据会统一使用已有标签名。",
+    "tags.new": "新建标签",
+    "tags.new_placeholder": "标签名称",
+    "tags.rename": "重命名",
+    "tags.rename_failed": "重命名失败",
+    "tags.renamed": "标签已重命名",
+    "tags.updated_note_bodies_value0": "已同步处理 {value0} 篇笔记正文；打开中的笔记也已更新。",
     "time.just_now": "刚刚",
     "time.this_month": "本月",
     "time.this_week": "本周",
@@ -752,6 +1011,7 @@ export const ZH_CN_MESSAGES = {
     "workspace.block_reference": "块引用",
     "workspace.callout": "提示块",
     "workspace.characters": "字符",
+    "workspace.close_right_note": "关闭右侧笔记",
     "workspace.choose_a_note_or_write_a_new_one": "选一篇笔记，或者写一篇新的",
     "workspace.code_block": "代码块",
     "workspace.definition_list": "定义列表",
@@ -760,6 +1020,11 @@ export const ZH_CN_MESSAGES = {
     "workspace.divider": "分隔线",
     "workspace.edit_only": "仅编辑",
     "workspace.enhanced_code_block": "增强代码块",
+    "workspace.export": "导出",
+    "workspace.export_failed": "导出失败",
+    "workspace.export_html": "导出 HTML",
+    "workspace.export_markdown": "导出 Markdown",
+    "workspace.export_pdf": "导出 PDF",
     "workspace.footnote": "脚注",
     "workspace.heading_value0": "{value0} 级标题",
     "workspace.inline_math": "行内公式",
@@ -769,6 +1034,7 @@ export const ZH_CN_MESSAGES = {
     "workspace.large_content_using_a_faster_comparison": "内容较大，已使用快速对比",
     "workspace.latest": "最近一次",
     "workspace.layout": "布局",
+    "workspace.left_note_pane": "左侧笔记窗格",
     "workspace.link": "链接",
     "workspace.loading_note_content": "正在载入笔记正文",
     "workspace.note_title": "笔记标题",
@@ -788,6 +1054,7 @@ export const ZH_CN_MESSAGES = {
     "workspace.preview_only": "仅预览",
     "workspace.remote_image": "网络图片",
     "workspace.resize_editor_and_preview_panes": "调整编辑与预览宽度",
+    "workspace.right_note_pane": "右侧笔记窗格",
     "workspace.restore_this_version": "恢复到这个版本？",
     "workspace.restore_this_version_da5169": "恢复此版本",
     "workspace.restored_to_selected_version": "已恢复到所选版本",
@@ -812,8 +1079,12 @@ aliases:
 
 # 欢迎使用 Inkstone
 
-> [!TIP] 先知道这三件事
-> 这是你的私有 Markdown 笔记本；内容会自动保存，断网也能继续写。
+> [!TIP] 先知道这五件事
+> - 这是你的私有 Markdown 笔记本；正文始终是普通文本。
+> - 内容会自动保存，断网也能继续写，重新联网后自动补传。
+> - 新建、移动、整理和删除等常用操作会先在本地立即生效；保存失败时安全回滚。
+> - 笔记顶部标题可以独立编辑，不必与正文第一行相同。
+> - MCP 完全可选，并且必须经过账号授权才能读取笔记。
 
 左侧管理笔记，中间编辑纯文本 Markdown，右侧实时预览。没有专有文档格式，备份里的 \`.md\` 文件可以被任何文本编辑器打开。
 
@@ -824,6 +1095,11 @@ aliases:
 - [ ] 选中文字，按 \`Ctrl + B\` 加粗
 - [ ] 按 \`Ctrl + K\` 打开命令面板
 - [ ] 写一个 \`#标签\`，或点击 [[我的第一篇笔记]] 创建双链笔记
+- [ ] 点击笔记顶部标题，把它改成与正文不同的名称
+- [ ] 新建一个子文件夹，再把它拖到其他文件夹或同级位置
+- [ ] 按住 Alt 点击另一篇笔记，或选择**在侧边打开**，同时处理两篇笔记
+- [ ] 在 **设置 → 关于** 把 Inkstone 安装成可离线启动的 PWA
+- [ ] 打开 **设置 → MCP** 查看私有 AI 接入方式和权限
 - [ ] 在 **设置 → 备份** 添加一个备份目标
 - [ ] 给一篇笔记创建带口令的分享
 
@@ -850,16 +1126,35 @@ aliases:
 
 ## 为什么适合长期使用
 
-::: tabs
-@tab 写作
-源码编辑、实时预览、双向滚动、专注模式、打字机模式、大纲与版本历史。
-
-@tab 组织
-最多 12 层文件夹、正文 \`#标签\`、\`[[双链]]\`、反向链接、关系图谱和中文全文搜索。
-
-@tab 安全与备份
-自托管、离线可写、多设备同步；可同时备份到多个 WebDAV 或 S3 目标，并导出可读 Markdown 与完整 JSON。
+:::: tabs
+::: tab-item 写作
+独立标题、源码编辑、实时预览、双向滚动、专注模式、打字机模式、大纲与版本历史。
 :::
+
+::: tab-item 组织
+最多 12 层且可拖拽排序的文件夹、正文 \`#标签\`、\`[[双链]]\`、反向链接、关系图谱和中文全文搜索。桌面端可以在侧边再开一篇笔记，每个窗格独立选择编辑、分栏或预览；删除文件夹时会保留并提升子文件夹，直属笔记移到上一级。
+:::
+
+::: tab-item 搜索与 AI
+命令面板、关键词搜索，以及可选的 Workers AI 语义/混合搜索。每个账号使用独立索引；AI 不可用时自动回退到关键词结果。
+:::
+
+::: tab-item 安全与备份
+自托管、可安装 PWA、离线可写、多设备同步和冲突副本；可同时备份到多个 WebDAV 或 S3 目标，并导出可读 Markdown、附件与完整结构化数据。
+:::
+::::
+
+## 私有 MCP（可选）
+
+在 **设置 → MCP** 中，站长可以启用远程 MCP 服务，每个账号再决定是否允许写入或移入回收站：
+
+- Codex、Claude Code 等完整 MCP 客户端通过带 PKCE 的 OAuth 2.1 授权；可以随时撤销单个或全部客户端。
+- 脚本或不支持 OAuth 的精简客户端可以使用 \`ink_...\` API Key。Key 只显示一次，服务端只保存哈希，也可以随时撤销。
+- MCP 可以搜索、分段读取、查看大纲/文件夹/标签/链接，并在明确授权后安全创建、编辑、整理、移入回收站或恢复笔记；永久删除始终不可用。
+- 配置 Workers AI 后可以建立按账号隔离的语义索引，并把语义结果与关键词结果合并。索引可重建或清空，正文变化会在后台更新。
+
+> [!WARNING] 连接外部 AI 前先确认隐私政策
+> Inkstone 会隔离账号并校验权限，但已授权客户端实际读取到的内容，之后仍由该客户端处理。
 
 ## Markdown 速查
 
@@ -941,13 +1236,15 @@ flowchart LR
 ~~~~
 
 ~~~~md-example title="标签页"
-::: tabs
-@tab 第一个标签
+:::: tabs
+::: tab-item 第一个标签
 这是第一个标签页的内容。
+:::
 
-@tab 第二个标签
+::: tab-item 第二个标签
 这是第二个标签页的内容。
 :::
+::::
 ~~~~
 
 ~~~~md-example title="折叠内容"
@@ -971,7 +1268,9 @@ console.log(\`Hello, \${name}!\`)
 
 ## 保存、同步与恢复
 
-内容会自动保存并同步到其他设备；断网时可以继续编辑，重新联网后会自动完成同步。
+内容会自动保存并同步到其他设备；断网时可以继续编辑，重新联网后会按顺序补传。普通操作会先在本地立即显示，后台保存失败才回滚；过期的同步结果不会覆盖更新的本地状态。
+
+在 **设置 → 关于** 可以安装 PWA。新版本会先提示再刷新，并在刷新前提交待保存的笔记；只有站长会收到部署版本更新提醒。现有数据库升级会自动执行带版本号、可重复安全运行的迁移，但更新自托管实例前仍应保留最新备份。
 
 在 **设置 → 备份** 中可添加多个 WebDAV/S3 目标并设置自动计划；在 **设置 → 数据** 中可导入或导出 \`.md\`、\`.zip\` 和完整 JSON。
 

@@ -1,5 +1,6 @@
-import { mergeSettings } from '@shared/constants'
+import { LIMITS, mergeSettings } from '@shared/constants'
 import { countText, deriveExcerpt, deriveTitle, extractTags, sortTagNames } from '@shared/markdown-utils'
+import { truncateText } from '@shared/text-utils'
 import { welcomeNoteTemplates } from '@shared/welcome-notes'
 import type {
   Attachment,
@@ -111,7 +112,7 @@ export function refreshNote(note: Note, content: string, title?: string): Note {
   return {
     ...note,
     content,
-    title: title === undefined ? note.title : title.trim(),
+    title: title === undefined ? note.title : truncateText(title.trim(), LIMITS.titleMaxLength),
     excerpt: deriveExcerpt(content),
     tags: sortTagNames(extractTags(content)),
     wordCount: counted.words,
@@ -127,7 +128,7 @@ export function listFolders(state: DemoState): Folder[] {
         (note) => note.folderId === item.id && note.deletedAt === null,
       ).length,
     }))
-    .sort((left, right) => left.position - right.position || left.name.localeCompare(right.name))
+    .sort((left, right) => left.position - right.position || left.createdAt - right.createdAt || left.id.localeCompare(right.id))
 }
 
 export function listTags(state: DemoState): Tag[] {
@@ -136,7 +137,8 @@ export function listTags(state: DemoState): Tag[] {
     if (item.deletedAt !== null) continue
     for (const name of item.tags) counts.set(name, (counts.get(name) ?? 0) + 1)
   }
-  return sortTagNames(counts.keys()).map((name) => {
+  const names = new Set([...state.tagIds.keys(), ...counts.keys()])
+  return sortTagNames(names).map((name) => {
     let id = state.tagIds.get(name)
     if (!id) {
       id = newDemoId()

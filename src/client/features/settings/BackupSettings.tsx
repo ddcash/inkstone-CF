@@ -130,7 +130,7 @@ export function BackupSettings() {
         {targets.length === 0 ? (<div className="rounded-[var(--r-lg)] border border-dashed border-[var(--border-default)]">
             <Empty art="archive" compact title={t("settings.no_backup_target_yet")} description={t("settings.add_a_webdav_or_s3_compatible_target_or_choose_a_common_provider_preset")} action={<Button size="sm" icon={<Plus size={13}/>} onClick={() => setEditing('new')}>{t("settings.add_first_target")}</Button>}/>
           </div>) : (<div className="space-y-2">
-            {targets.map((target) => (<TargetCard key={target.id} target={target} onEdit={() => setEditing(target)} onChanged={reload}/>))}
+            {targets.map((target) => (<TargetCard key={target.id} target={target} onEdit={() => setEditing(target)} onChanged={reload} onPatch={(id, patch) => setTargets((current) => current?.map((item) => item.id === id ? { ...item, ...patch } : item) ?? current)} onRemove={(id) => setTargets((current) => current?.filter((item) => item.id !== id) ?? current)} onRestore={(removed) => setTargets((current) => current && !current.some((item) => item.id === removed.id) ? [...current, removed] : current)}/>))}
           </div>)}
       </section>
 
@@ -162,10 +162,13 @@ export function BackupSettings() {
     </div>);
 }
 
-function TargetCard({ target, onEdit, onChanged, }: {
+function TargetCard({ target, onEdit, onChanged, onPatch, onRemove, onRestore, }: {
     target: BackupTarget;
     onEdit: () => void;
     onChanged: () => Promise<void>;
+    onPatch: (id: string, patch: Partial<BackupTarget>) => void;
+    onRemove: (id: string) => void;
+    onRestore: (target: BackupTarget) => void;
 }) {
     const toast = useUi((s) => s.toast);
     const [testing, setTesting] = useState(false);
@@ -192,7 +195,6 @@ function TargetCard({ target, onEdit, onChanged, }: {
               {target.name}
             </span>
             <Badge tone="neutral">{target.type === 's3' ? 'S3' : 'WebDAV'}</Badge>
-            {(config.mode as string) === 'mirror' && <Badge tone="neutral">{t("settings.individual_files")}</Badge>}
           </div>
           <div className="mt-0.5 truncate text-[11.5px] text-[var(--text-quaternary)]">{location}</div>
 
@@ -219,11 +221,13 @@ function TargetCard({ target, onEdit, onChanged, }: {
                 return;
             actionRef.current = true;
             setUpdating(true);
+            onPatch(target.id, { enabled });
             try {
-                await api.backup.patch(target.id, { enabled } as Partial<BackupTargetInput>);
+                await api.backup.patch(target.id, { enabled, expectedUpdatedAt: target.updatedAt });
                 await onChanged();
             }
             catch (error) {
+                onPatch(target.id, { enabled: target.enabled });
                 toast({ title: t("settings.update_failed"), description: error instanceof ApiError ? error.message : String(error), tone: 'danger' });
             }
             finally {
@@ -270,11 +274,13 @@ function TargetCard({ target, onEdit, onChanged, }: {
                 });
                 if (!ok)
                     return;
+                onRemove(target.id);
                 await api.backup.remove(target.id);
                 toast({ title: t("settings.backup_target_deleted") });
                 await onChanged();
             }
             catch (error) {
+                onRestore(target);
                 toast({ title: t("common.delete_failed"), description: error instanceof ApiError ? error.message : String(error), tone: 'danger' });
             }
             finally {
@@ -306,7 +312,6 @@ function TargetForm({ target, onClose, onSaved, }: {
         pathStyle: config.pathStyle !== false,
         url: String(config.url ?? ''),
         username: String(config.username ?? ''),
-        mode: (config.mode as 'archive' | 'mirror') ?? 'archive',
     });
     const [secret, setSecret] = useState({ accessKeyId: '', secretAccessKey: '', password: '' });
     const [saving, setSaving] = useState(false);
@@ -352,9 +357,9 @@ function TargetForm({ target, onClose, onSaved, }: {
                 bucket: form.bucket,
                 prefix: form.prefix,
                 pathStyle: form.pathStyle,
-                mode: form.mode,
+                mode: 'archive',
             }
-            : { url: form.url, username: form.username, prefix: form.prefix, mode: form.mode },
+            : { url: form.url, username: form.username, prefix: form.prefix, mode: 'archive' },
         secret: type === 's3'
             ? { accessKeyId: secret.accessKeyId, secretAccessKey: secret.secretAccessKey }
             : { password: secret.password },
@@ -366,7 +371,7 @@ function TargetForm({ target, onClose, onSaved, }: {
         setSaving(true);
         try {
             if (target)
-                await api.backup.patch(target.id, buildPayload());
+                await api.backup.patch(target.id, { ...buildPayload(), expectedUpdatedAt: target.updatedAt });
             else
                 await api.backup.create(buildPayload());
             toast({ title: target ? t("settings.backup_target_updated") : t("settings.backup_target_added"), tone: 'success' });
@@ -514,14 +519,6 @@ function TargetForm({ target, onClose, onSaved, }: {
 
         <Field label={t("settings.subdirectory")} hint={t("settings.store_backups_in_this_directory_or_leave_blank_to_use_the_root_directory")}>
           <Input value={form.prefix} onChange={(e) => setForm({ ...form, prefix: e.target.value })} placeholder="inkstone"/>
-        </Field>
-
-        <Field label={t("settings.backup_format")} hint={form.mode === 'archive'
-            ? t("settings.upload_one_zip_to_minimize_requests_best_for_rate_limited_storage_provid") : t("settings.upload_individual_files_so_they_remain_browsable_and_editable_in_the_sto")}>
-          <Segmented<'archive' | 'mirror'> value={form.mode} onChange={(mode) => setForm({ ...form, mode })} options={[
-            { value: 'archive', label: t("settings.single_archive") },
-            { value: 'mirror', label: t("settings.individual_file_mirror") },
-        ]}/>
         </Field>
 
         {result && (<div role={result.ok ? 'status' : 'alert'} className={cn('flex items-start gap-2 rounded-[var(--r-md)] px-3 py-2.5 text-[12px] leading-relaxed', result.ok

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Download, FileJson, FileUp, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
+import { AlertCircle, Download, FileJson, FileUp, FolderOpen, ImageIcon, RefreshCw, Sparkles, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { formatBytes, formatNumber } from '../../lib/time';
 import { Button } from '../../components/primitives';
@@ -8,16 +8,21 @@ import { SettingRow } from '../../components/form';
 import { confirm } from '../../components/overlay';
 import { useUi } from '../../store/ui';
 import { useNotes } from '../../store/notes';
+import { AttachmentManager } from '../attachments/AttachmentManager';
 import { t } from "../../lib/i18n";
+import { restoreMarkdownBackupFolder } from '../../lib/backup-import';
 export function DataSettings() {
+    const [attachmentManagerOpen, setAttachmentManagerOpen] = useState(false);
     const [stats, setStats] = useState<Record<string, number> | null>(null);
     const [statsError, setStatsError] = useState<string | null>(null);
     const [busy, setBusy] = useState<string | null>(null);
     const fileRef = useRef<HTMLInputElement>(null);
+    const backupFolderRef = useRef<HTMLInputElement>(null);
     const busyRef = useRef<string | null>(null);
     const statsEpoch = useRef(0);
     const mountedRef = useRef(true);
     const toast = useUi((s) => s.toast);
+    const emptyTrash = useNotes((s) => s.emptyTrash);
     const pull = useNotes((s) => s.pull);
     const loadStats = useCallback(async () => {
         if (!mountedRef.current)
@@ -65,6 +70,24 @@ export function DataSettings() {
                 });
             }
         });
+    };
+    const reportImport = async (result: Awaited<ReturnType<typeof api.transfer.import>>) => {
+        const refreshed = await pull({ force: true }).then(() => true, () => false);
+        void loadStats();
+        const summary = t("settings.created_value0_updated_value1_skipped_value2_restored_value3_attachments", { value0: result.createdNotes, value1: result.updatedNotes, value2: result.skippedNotes, value3: result.createdAttachments, value4: result.skippedAttachments });
+        const details = [summary];
+        if (result.warnings.length)
+            details.push(result.warnings[0]);
+        if (!refreshed)
+            details.push(t("settings.operation_completed_but_refresh_failed"));
+        toast({
+            title: t("settings.import_completed"),
+            description: details.join('\uFF1B'),
+            tone: result.warnings.length || !refreshed ? 'warning' : 'success',
+            duration: 7000,
+        });
+        if (result.warnings.length)
+            console.warn(t("settings.inkstone_import_reminder"), result.warnings);
     };
     useEffect(() => {
         mountedRef.current = true;
@@ -114,6 +137,14 @@ export function DataSettings() {
       </section>
 
       <section>
+        <h3 className="mb-1 text-[11px] font-semibold tracking-[0.06em] text-[var(--text-quaternary)]">{t("settings.attachments")}</h3>
+
+        <SettingRow title={t("attachments.manage")} description={t("attachments.manage_description")}>
+          <Button size="sm" icon={<ImageIcon size={13}/>} onClick={() => setAttachmentManagerOpen(true)}>{t("attachments.manage")}</Button>
+        </SettingRow>
+      </section>
+
+      <section>
         <h3 className="mb-1 text-[11px] font-semibold tracking-[0.06em] text-[var(--text-quaternary)]">{t("settings.export")}</h3>
 
         <SettingRow title={t("settings.export_to_zip")} description={t("settings.includes_every_note_folder_tag_and_attachment_for_a_complete_restore_plu")}>
@@ -128,6 +159,26 @@ export function DataSettings() {
       <section>
         <h3 className="mb-1 text-[11px] font-semibold tracking-[0.06em] text-[var(--text-quaternary)]">{t("settings.import")}</h3>
 
+        <SettingRow title={t("settings.restore_backup_folder")} description={t("settings.restore_backup_folder_description")}>
+          <Button size="sm" icon={<FolderOpen size={13}/>} loading={busy === 'restore-backup'} disabled={busy !== null} onClick={() => backupFolderRef.current?.click()}>{t("settings.select_backup_folder")}</Button>
+        </SettingRow>
+
+        <input ref={backupFolderRef} type="file" hidden multiple {...({ webkitdirectory: '', directory: '' } as Record<string, string>)} onChange={async (event) => {
+            const files = [...(event.target.files ?? [])];
+            event.target.value = '';
+            if (!files.length)
+                return;
+            await run('restore-backup', async () => {
+                try {
+                    const result = await restoreMarkdownBackupFolder(files, (batch, manifest, paths) => api.transfer.import(batch, 'newer', { manifest, paths }));
+                    await reportImport(result);
+                }
+                catch (err) {
+                    toast({ title: t("settings.import_failed"), description: err instanceof Error ? err.message : String(err), tone: 'danger' });
+                }
+            });
+        }}/>
+
         <SettingRow title={t("settings.import_file")} description={t("settings.supports_md_txt_zip_and_inkstone_json_exports_for_matching_ids_the_newer")}>
           <Button size="sm" icon={<FileUp size={13}/>} loading={busy === 'import'} disabled={busy !== null} onClick={() => fileRef.current?.click()}>{t("settings.select_file")}</Button>
         </SettingRow>
@@ -140,22 +191,7 @@ export function DataSettings() {
             await run('import', async () => {
                 try {
                     const result = await api.transfer.import(files);
-                    const refreshed = await pull({ force: true }).then(() => true, () => false);
-                    void loadStats();
-                    const summary = t("settings.created_value0_updated_value1_skipped_value2_restored_value3_attachments", { value0: result.createdNotes, value1: result.updatedNotes, value2: result.skippedNotes, value3: result.createdAttachments, value4: result.skippedAttachments });
-                    const details = [summary];
-                    if (result.warnings.length)
-                        details.push(result.warnings[0]);
-                    if (!refreshed)
-                        details.push(t("settings.operation_completed_but_refresh_failed"));
-                    toast({
-                        title: t("settings.import_completed"),
-                        description: details.join('\uFF1B'),
-                        tone: result.warnings.length || !refreshed ? 'warning' : 'success',
-                        duration: 7000,
-                    });
-                    if (result.warnings.length)
-                        console.warn(t("settings.inkstone_import_reminder"), result.warnings);
+                    await reportImport(result);
                 }
                 catch (err) {
                     toast({ title: t("settings.import_failed"), description: err instanceof Error ? err.message : String(err), tone: 'danger' });
@@ -215,13 +251,13 @@ export function DataSettings() {
             if (!ok)
                 return;
             try {
-                const res = await api.notes.emptyTrash();
-                const refreshed = await pull({ force: true }).then(() => true, () => false);
+                const purged = await emptyTrash();
+                if (purged === null)
+                    return;
                 void loadStats();
                 toast({
-                    title: t("common.permanently_deleted_value0_notes", { value0: res.purged }),
-                    description: refreshed ? undefined : t("settings.operation_completed_but_refresh_failed"),
-                    tone: refreshed ? 'success' : 'warning',
+                    title: t("common.permanently_deleted_value0_notes", { value0: purged }),
+                    tone: 'success',
                 });
             }
             catch (err) {
@@ -234,5 +270,7 @@ export function DataSettings() {
         })}>{t("common.clear")}</Button>
         </SettingRow>
       </section>
+
+      <AttachmentManager open={attachmentManagerOpen} onClose={() => setAttachmentManagerOpen(false)} onChanged={() => void loadStats()}/>
     </div>);
 }

@@ -37,6 +37,39 @@ export interface SessionInfo {
   settings: UserSettings | null
 }
 
+export interface TotpLoginChallenge {
+  twoFactorRequired: true
+  challengeToken: string
+  expiresAt: number
+}
+
+export type PasswordLoginResult = SessionInfo | TotpLoginChallenge
+
+export type TotpLoginResult = SessionInfo & {
+  recoveryCodeUsed: boolean
+  recoveryCodesRemaining: number | null
+}
+
+export interface TotpStatus {
+  available: boolean
+  enabled: boolean
+  enabledAt: number | null
+  recoveryCodesRemaining: number
+}
+
+export interface TotpSetupInfo {
+  setupToken: string
+  secret: string
+  uri: string
+  expiresAt: number
+}
+
+export interface TotpRecoveryCodesResult {
+  recoveryCodes: string[]
+  recoveryCodesRemaining: number
+  generatedAt: number
+}
+
 export type UpdateCheckStatus = 'ok' | 'unavailable'
 
 export interface UpdateCheckResponse {
@@ -51,6 +84,7 @@ export interface UpdateCheckResponse {
 export type ThemePref = 'light' | 'dark' | 'system'
 export type AppLocale = 'zh-CN' | 'en-US'
 export type AccentName = 'cinnabar' | 'indigo' | 'celadon' | 'amber' | 'terracotta' | 'wisteria' | 'graphite'
+export type BackgroundName = 'paper' | 'white'
 export type UiDensity = 'comfortable' | 'compact'
 export type ProseFont = 'sans' | 'serif'
 export type ProseWidth = 'narrow' | 'normal' | 'wide' | 'full'
@@ -61,6 +95,7 @@ export interface AppearanceSettings {
   language: AppLocale
   theme: ThemePref
   accent: AccentName
+  background: BackgroundName
   density: UiDensity
   proseFont: ProseFont
   proseSize: number
@@ -133,6 +168,7 @@ export interface Folder {
   parentId: string | null
   name: string
   icon: string | null
+  color: string | null
   position: number
   createdAt: number
   updatedAt: number
@@ -178,6 +214,10 @@ export interface Attachment {
   createdAt: number
 }
 
+export interface AttachmentWithUsage extends Attachment {
+  references: number
+}
+
 
 export type ViewKind =
   | 'all'
@@ -213,6 +253,7 @@ export interface CreateNoteBody {
   title?: string
   content?: string
   folderId?: string | null
+  isStarred?: boolean
 }
 
 export interface PatchNoteBody {
@@ -259,8 +300,14 @@ export interface SearchResponse {
 export interface GraphNode {
   id: string
   title: string
+  kind: 'note' | 'unresolved'
   degree: number
+  inDegree: number
+  outDegree: number
   folderId: string | null
+  folderName: string | null
+  folderColor: string | null
+  tags: Array<{ name: string; color: string | null }>
 }
 
 export interface GraphEdge {
@@ -271,6 +318,27 @@ export interface GraphEdge {
 export interface GraphResponse {
   nodes: GraphNode[]
   edges: GraphEdge[]
+  meta: {
+    mode: 'global' | 'local'
+    centerId: string | null
+    depth: number
+    totalNodes: number
+    totalEdges: number
+    truncated: boolean
+    limit: number
+  }
+}
+
+export interface GraphQuery {
+  mode?: 'global' | 'local'
+  center?: string
+  depth?: number
+  q?: string
+  folderId?: string
+  tag?: string
+  includeOrphans?: boolean
+  includeUnresolved?: boolean
+  limit?: number
 }
 
 
@@ -291,6 +359,7 @@ export interface SyncResponse {
 
   settingsChanged: boolean
   profileChanged?: boolean
+  siteChanged?: boolean
   notes: NoteSummary[]
   folders: Folder[]
   tags: Tag[]
@@ -350,6 +419,10 @@ export interface BackupTargetInput {
     accessKeyId?: string
     secretAccessKey?: string
   }
+}
+
+export type BackupTargetPatchInput = Partial<BackupTargetInput> & {
+  expectedUpdatedAt?: number
 }
 
 export interface BackupTargetResult {
@@ -441,6 +514,56 @@ export interface ImportResult {
 }
 
 
+export interface McpPreferences {
+  writeEnabled: boolean
+  trashEnabled: boolean
+  updatedAt: number
+}
+
+export interface McpGrant {
+  id: string
+  clientId: string
+  clientName: string
+  clientUri: string | null
+  scopes: string[]
+  createdAt: number
+  expiresAt: number | null
+}
+
+export interface McpApiKey {
+  id: string
+  name: string
+  scopes: string[]
+  createdAt: number
+  lastUsedAt: number | null
+}
+
+export interface McpAiSearchStatus {
+  available: boolean
+  enabled: boolean
+  model: string
+  indexedCount: number
+  pendingCount: number
+  reason: 'no_ai_binding' | null
+}
+
+export interface McpSettingsInfo {
+  enabled: boolean
+  canManageGlobal: boolean
+  endpoint: string
+  oauth: true
+  preferences: McpPreferences
+  apiKeys: McpApiKey[]
+  aiSearch: McpAiSearchStatus
+  grants: McpGrant[]
+  privacy: {
+    publicEndpoint: false
+    perUserIndex: true
+    externalClientReceivesSelectedContent: true
+  }
+}
+
+
 export interface ApiErrorBody {
   error: {
     code: string
@@ -464,7 +587,13 @@ export type ApiErrorCode =
   | 'weak_password'
   | 'username_taken'
   | 'invalid_credentials'
+  | 'invalid_two_factor_code'
   | 'wrong_password'
   | 'too_many_attempts'
   | 'registration_closed'
   | 'server_misconfigured'
+  | 'two_factor_already_enabled'
+  | 'two_factor_challenge_expired'
+  | 'two_factor_not_enabled'
+  | 'two_factor_setup_expired'
+  | 'two_factor_unavailable'
